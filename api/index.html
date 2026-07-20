@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Fast ACF estimation for irregularly- and regularly-sampled 1D signals, via the Non-Uniform FFT (FINUFFT) and classic FFT.
+        <meta name="description" content="Fast Auto & Cross correlatuon estimation for irregularly- and regularly-sampled 1D signals, via the Non-Uniform FFT (FINUFFT) and classic FFT.
 ">
       
       
@@ -1492,9 +1492,7 @@ cost.</p>
 
 
 <a href="#nufftcf.nufft_acf.compute_acf_gaussian_nufft" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_acf_gaussian_nufft</span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">N1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_acf_gaussian_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">N1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1723,9 +1721,7 @@ cost.</p>
 
 
 <a href="#nufftcf.nufft_acf.compute_acf_rectangle_nufft" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_acf_rectangle_nufft</span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">N1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_acf_rectangle_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">N1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1869,9 +1865,7 @@ removed by dividing by sqrt(ACF_x(0)·ACF_y(0)).</p>
 
 
 <a href="#nufftcf.nufft_ccf.compute_ccf_gaussian_nufft" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_ccf_gaussian_nufft</span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">N1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_ccf_gaussian_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">N1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2177,9 +2171,7 @@ removed by dividing by sqrt(ACF_x(0)·ACF_y(0)).</p>
 
 
 <a href="#nufftcf.nufft_ccf.compute_ccf_rectangle_nufft" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_ccf_rectangle_nufft</span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">N1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_ccf_rectangle_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">N1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3409,9 +3401,7 @@ whenever the NUFFT bias on periodic signals is unacceptable.</p>
 
 
 <a href="#nufftcf.realspace_ccf.compute_ccf_gaussian_realspace" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_ccf_gaussian_realspace</span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_ccf_gaussian_realspace</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3677,9 +3667,7 @@ due to kernel edge effects near the boundaries of the time range.</p>
 
 
 <a href="#nufftcf.realspace_ccf.compute_ccf_rectangle_realspace" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_ccf_rectangle_realspace</span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_ccf_rectangle_realspace</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
