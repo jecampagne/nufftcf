@@ -41,7 +41,7 @@ c, b = fn(lags, t, x, s, y, bin_width=0.5)
 ```python
 import numpy as np
 import pandas as pd
-from nufftacf import compute_acf_gaussian_nufft, t_numeric_of
+from nufftcf import compute_acf_gaussian_nufft, t_numeric_of
 
 # A pandas Series with a DatetimeIndex works directly
 idx = pd.date_range("2005-01-01", periods=3650, freq="D")
@@ -59,7 +59,7 @@ c, b = compute_acf_gaussian_nufft(lags, t, x, bin_width=0.5)
 ## Regularly-sampled series (classic FFT path)
 
 ```python
-from nufftacf import compute_acf_gaussian_fft, compute_acf_regular_fft
+from nufftcf import compute_acf_gaussian_fft, compute_acf_regular_fft
 
 n = 3650
 t = np.arange(n, dtype=float)         # integer day indices
@@ -94,7 +94,7 @@ and different sampling times.
 ```python
 import numpy as np
 import pandas as pd
-from nufftacf import compute_ccf_gaussian_nufft
+from nufftcf import compute_ccf_gaussian_nufft
 
 # Two irregularly-sampled series on a COMMON time origin (elapsed days since
 # the same reference date), with y lagging behind x by tau0 = 60 days
@@ -127,24 +127,24 @@ c, b = compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5)
 
 For a worked comparison against **pyZDCF**, including a case with a known
 theoretical CCF, see
-[`notebook/nufftacf_ccf_demo.ipynb`](https://github.com/jecampagne/nufftacf/blob/main/notebook/nufftacf_ccf_demo.ipynb).
+[`notebook/nufftcf_ccf_demo.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_ccf_demo.ipynb).
 
 ## Notebooks
 
 Colab-ready notebooks are included in `notebook/`:
 
-- [`pastas_vs_nufftact.ipynb`](https://github.com/jecampagne/nufftacf/blob/main/notebook/pastas_vs_nufftact.ipynb) —
+- [`pastas_vs_nufftcf.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/pastas_vs_nufftcf.ipynb) —
   **irregularly-sampled** series (sine and AR(1)-like, with gaps), NUFFT path vs Pastas.
-- [`pastas_vs_nufftacf_regular.ipynb`](https://github.com/jecampagne/nufftacf/blob/main/notebook/pastas_vs_nufftacf_regular.ipynb) —
+- [`pastas_vs_nufftcf_regular.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/pastas_vs_nufftcf_regular.ipynb) —
   **regularly-sampled** series (sine, noisy sine, exponential, constant, square wave),
   classic-FFT path vs Pastas for all three bin methods.
-- [`zdcf_vs_nufftacf.ipynb`](https://github.com/jecampagne/nufftacf/blob/main/notebook/zdcf_vs_nufftacf.ipynb) —
-  **nufftacf** vs **pyZDCF** on the same irregularly-sampled series as above.
-- [`nufftacf_ccf_demo.ipynb`](https://github.com/jecampagne/nufftacf/blob/main/notebook/nufftacf_ccf_demo.ipynb) —
+- [`zdcf_vs_nufftcf.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/zdcf_vs_nufftcf.ipynb) —
+  **nufftcf** vs **pyZDCF** on the same irregularly-sampled series as above.
+- [`nufftcf_ccf_demo.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_ccf_demo.ipynb) —
   the **cross-correlation (CCF)** functions vs **pyZDCF**, including a case with two
   coupled Ornstein-Uhlenbeck series for which the theoretical CCF is known analytically.
 
-All install `nufftacf` directly from GitHub in their first cell — no local setup needed
+All install `nufftcf` directly from GitHub in their first cell — no local setup needed
 to run them on Colab.
 
 ## Benchmark scripts
@@ -164,5 +164,5 @@ python benchmark/fit_benchmark_acf_regular.py
 Example results (Apple Silicon Mac) are stored in `benchmark/`.
 
 No dedicated benchmark script is provided for the CCF estimators against
-**pyZDCF**, but the plots in `nufftacf_ccf_demo.ipynb` show `nufftacf` running
+**pyZDCF**, but the plots in `nufftcf_ccf_demo.ipynb` show `nufftcf` running
 roughly two orders of magnitude faster.

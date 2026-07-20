@@ -1,3 +1,3 @@
 # License
 
-[MIT](https://github.com/jecampagne/nufftacf/blob/main/LICENSE)
+[MIT](https://github.com/jecampagne/nufftcf/blob/main/LICENSE)

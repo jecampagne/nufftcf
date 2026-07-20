@@ -1,5 +1,5 @@
 """
-nufftacf: fast ACF estimation for irregularly- AND regularly-sampled time series.
+nufftcf: fast ACF estimation for irregularly- AND regularly-sampled time series.
 
 Three estimation families are provided, sharing the same (lags, t, x, bin_width)
 calling convention:
@@ -25,7 +25,7 @@ has `regular` (no smoothing kernel).
 Example
 -------
 >>> import numpy as np, pandas as pd
->>> from nufftacf import compute_acf_gaussian_nufft, t_numeric_of
+>>> from nufftcf import compute_acf_gaussian_nufft, t_numeric_of
 >>> idx = pd.date_range("2020-01-01", periods=2000, freq="D")
 >>> x = pd.Series(np.random.randn(2000), index=idx)
 >>> lags = np.arange(0.0, 366.0)
@@ -33,7 +33,7 @@ Example
 >>> c, b = compute_acf_gaussian_nufft(lags, t, x.to_numpy(), bin_width=0.5)
 
 >>> # regularly-sampled data -> use the faster classic-FFT path instead:
->>> from nufftacf import compute_acf_gaussian_fft, compute_acf_regular_fft
+>>> from nufftcf import compute_acf_gaussian_fft, compute_acf_regular_fft
 >>> c, b = compute_acf_gaussian_fft(lags, t, x.to_numpy(), bin_width=0.5)
 >>> c, b = compute_acf_regular_fft(lags, t, x.to_numpy())  # no kernel
 """

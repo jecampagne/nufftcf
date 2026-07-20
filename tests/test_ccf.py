@@ -23,7 +23,7 @@ Testing strategy
 import numpy as np
 import pytest
 
-from nufftacf import (
+from nufftcf import (
     compute_ccf_gaussian_nufft,
     compute_ccf_rectangle_nufft,
     compute_ccf_gaussian_realspace,

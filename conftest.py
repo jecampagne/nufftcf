@@ -16,7 +16,7 @@ This only affects `pytest` runs. It does NOT change anything about how
 the package behaves for normal use (scripts, notebooks, your own code) --
 if you hit the same symptoms outside of pytest, export the same
 environment variables in your shell (or at the very top of your script,
-before `import nufftacf`) -- see the README's "macOS troubleshooting"
+before `import nufftcf`) -- see the README's "macOS troubleshooting"
 note.
 
 Override by setting these yourself in your environment before running

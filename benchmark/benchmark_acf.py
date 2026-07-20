@@ -1,5 +1,5 @@
 """
-Benchmark (data collection only): time Pastas vs the nufftact package on
+Benchmark (data collection only): time Pastas vs the nufftcf package on
 irregularly-sampled series of variable length, for both the gaussian and
 rectangle kernels.
 
@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 import pastas as ps
 
-from nufftact import (
+from nufftcf import (
     compute_acf_gaussian_nufft,
     compute_acf_rectangle_nufft,
     t_numeric_of,
@@ -180,7 +180,7 @@ def run_benchmark(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Collect ACF benchmark timing data (Pastas vs nufftact)."
+        description="Collect ACF benchmark timing data (Pastas vs nufftcf)."
     )
     parser.add_argument(
         "--output",
@@ -203,7 +203,7 @@ if __name__ == "__main__":
         "--n-repeat-nufft",
         type=int,
         default=3,
-        help="Number of repeats per point for the nufftact package.",
+        help="Number of repeats per point for the nufftcf package.",
     )
     parser.add_argument(
         "--order-seed",

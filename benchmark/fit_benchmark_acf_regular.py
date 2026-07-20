@@ -10,7 +10,7 @@ expected scaling law:
     (empirically ~O(n): a fixed-size, O(window) np.corrcoef call per lag,
     NOT the O(n^2) slotting technique used by the other two bin methods --
     confirmed by direct timing before writing this script, not assumed.)
-  - nufftacf "fft" and "nufft"                : a * n*ln(n) + overhead
+  - nufftcf "fft" and "nufft"                : a * n*ln(n) + overhead
     (both scale the same way; "fft" has a smaller `a`, see README)
 
 Same robust-fit / bootstrap machinery as fit_benchmark_acf.py (the
@@ -208,7 +208,7 @@ def plot_results(results, output_prefix):
         ax.set_title(f"{kernel} (regular sampling)")
         ax.legend(fontsize=8)
         ax.grid(True, which="both", alpha=0.3)
-        fig.suptitle("ACF benchmark (regular data): Pastas vs nufftacf (fft / nufft)")
+        fig.suptitle("ACF benchmark (regular data): Pastas vs nufftcf (fft / nufft)")
         plt.tight_layout()
         outfile = f"{kernel}_{output_prefix}_fit.png"
         fig.savefig(outfile, dpi=150)

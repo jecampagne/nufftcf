@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nufftacf import (
+from nufftcf import (
     compute_acf_regular_fft,
     compute_acf_rectangle_fft,
     compute_acf_gaussian_fft,
@@ -26,7 +26,7 @@ LAGS = np.arange(0.0, 366.0)
 
 
 def _make_correlated_series(n=3000, alpha=10.0, seed=0):
-    """Same AR(1)-like construction as test_nufftacf.py, on a regular
+    """Same AR(1)-like construction as test_nufftcf.py, on a regular
     integer grid (delta_t=1)."""
     rng = np.random.default_rng(seed)
     noise = rng.standard_normal(n + 200)

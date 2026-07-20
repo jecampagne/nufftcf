@@ -1,11 +1,11 @@
-site_name: nufftacf
-site_url: https://jecampagne.github.io/nufftacf/
+site_name: nufftcf
+site_url: https://jecampagne.github.io/nufftcf/
 site_description: >
   Fast ACF estimation for irregularly- and regularly-sampled 1D signals,
   via the Non-Uniform FFT (FINUFFT) and classic FFT.
 site_author: Jean-Eric Campagne
-repo_url: https://github.com/jecampagne/nufftacf
-repo_name: jecampagne/nufftacf
+repo_url: https://github.com/jecampagne/nufftcf
+repo_name: jecampagne/nufftcf
 edit_uri: edit/main/docs/
 
 theme:

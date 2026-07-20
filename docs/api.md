@@ -1,9 +1,9 @@
 # API Reference
 
-All public functions are importable directly from `nufftacf`:
+All public functions are importable directly from `nufftcf`:
 
 ```python
-from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
+from nufftcf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 ```
 
 ---
@@ -12,7 +12,7 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 
 ### Autocorrelation (ACF)
 
-::: nufftacf.nufft_acf
+::: nufftcf.nufft_acf
     options:
       show_root_heading: true
       show_signature: true
@@ -24,7 +24,7 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 
 ### Cross-correlation (CCF)
 
-::: nufftacf.nufft_ccf
+::: nufftcf.nufft_ccf
     options:
       show_root_heading: true
       show_signature: true
@@ -36,7 +36,7 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 
 ## Classic-FFT estimators (regular data only)
 
-::: nufftacf.fft_acf
+::: nufftcf.fft_acf
     options:
       show_root_heading: true
       show_signature: true
@@ -51,7 +51,7 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 
 ### Autocorrelation (ACF)
 
-::: nufftacf.realspace_acf
+::: nufftcf.realspace_acf
     options:
       show_root_heading: true
       show_signature: true
@@ -63,7 +63,7 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 
 ### Cross-correlation (CCF)
 
-::: nufftacf.realspace_ccf
+::: nufftcf.realspace_ccf
     options:
       show_root_heading: true
       show_signature: true
@@ -75,7 +75,7 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 ---
 
 ## Kernel helpers
-::: nufftacf.kernels
+::: nufftcf.kernels
     options:
       show_root_heading: true
       show_signature: true
@@ -90,7 +90,7 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 ---
 
 ## Utilities
-::: nufftacf.utils
+::: nufftcf.utils
     options:
       show_root_heading: true
       show_signature: true

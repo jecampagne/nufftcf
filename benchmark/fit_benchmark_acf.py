@@ -4,7 +4,7 @@ Fit and plot ACF benchmark results.
 Reads the long-format CSV produced by benchmark_acf.py (one row per
 individual repeat) and, for each kernel (gaussian/rectangle):
   - Pastas timings are fit to   a * n^2       + overhead
-  - nufftacf timings are fit to a * n*ln(n)  + overhead
+  - nufftcf timings are fit to a * n*ln(n)  + overhead
 
 Fitting is ROBUST (scipy.optimize.least_squares with loss='soft_l1'),
 which down-weights the influence of one-off outlier points (e.g. a single
@@ -212,7 +212,7 @@ def plot_results(results, outfile):
 
     axes[0].set_ylabel("Computation time [s]")
     fig.suptitle(
-        "ACF benchmark: Pastas vs nufftacf -- robust fit (soft_l1)\n"
+        "ACF benchmark: Pastas vs nufftcf -- robust fit (soft_l1)\n"
         "error bars show the min-to-max spread across repeats at each point"
     )
     plt.tight_layout()
@@ -285,7 +285,7 @@ def plot2_results(results, outfile):
         ax.grid(True, which="both", alpha=0.3)
 
         ax.set_ylabel("Computation time [s]")
-        fig.suptitle("ACF benchmark: Pastas vs nufftacf")
+        fig.suptitle("ACF benchmark: Pastas vs nufftcf")
         fig.savefig(f"{kernel}_{outfile}", dpi=150)
         print(f"Figure saved:{kernel}_{outfile}")
 

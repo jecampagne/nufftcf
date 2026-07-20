@@ -1,14 +1,14 @@
-# nufftacf
+# nufftcf
 
-[![Tests](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml/badge.svg)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![Lint](https://github.com/jecampagne/nufftacf/actions/workflows/lint.yml/badge.svg)](https://github.com/jecampagne/nufftacf/actions/workflows/lint.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jecampagne/nufftacf/blob/main/LICENSE)
+[![Tests](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml/badge.svg)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![Lint](https://github.com/jecampagne/nufftcf/actions/workflows/lint.yml/badge.svg)](https://github.com/jecampagne/nufftcf/actions/workflows/lint.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jecampagne/nufftcf/blob/main/LICENSE)
 
-[![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13%20|%203.14-blue)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![Linux](https://img.shields.io/badge/linux-ubuntu--latest-orange?logo=linux)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![macOS](https://img.shields.io/badge/macOS-latest%20(arm64)%20%7C%20intel-orange?logo=apple)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![macOS](https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![Windows](https://img.shields.io/badge/windows-latest-orange?logo=windows)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13%20|%203.14-blue)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![Linux](https://img.shields.io/badge/linux-ubuntu--latest-orange?logo=linux)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![macOS](https://img.shields.io/badge/macOS-latest%20(arm64)%20%7C%20intel-orange?logo=apple)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![macOS](https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![Windows](https://img.shields.io/badge/windows-latest-orange?logo=windows)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
 
 Fast **autocorrelation** (ACF) and **cross-correlation** (CCF) function estimation for
 **irregularly- and regularly-sampled** 1D time series, scaling as $\sim~O(n\log n)$.
@@ -56,7 +56,7 @@ would silently misalign the lags. See [Usage](usage.md) for a worked example.
 
 ```python
 import numpy as np
-from nufftacf import compute_acf_gaussian_nufft, t_numeric_of
+from nufftcf import compute_acf_gaussian_nufft, t_numeric_of
 import pandas as pd
 
 sts = pd.Series(...)  # irregularly-sampled pandas Series with DatetimeIndex
@@ -66,7 +66,7 @@ c, b = compute_acf_gaussian_nufft(lags, t_numeric_of(sts), sts.to_numpy(), bin_w
 
 ```python
 # Regularly-sampled series: use the faster classic-FFT path
-from nufftacf import compute_acf_gaussian_fft
+from nufftcf import compute_acf_gaussian_fft
 t = np.arange(len(x), dtype=float)
 c, b = compute_acf_gaussian_fft(lags, t, x, bin_width=0.5)
 ```
@@ -74,7 +74,7 @@ c, b = compute_acf_gaussian_fft(lags, t, x, bin_width=0.5)
 ```python
 # Cross-correlation between two irregularly-sampled series on a COMMON time
 # origin (t and s must be elapsed time since the same reference date)
-from nufftacf import compute_ccf_gaussian_nufft
+from nufftcf import compute_ccf_gaussian_nufft
 
 lags = np.arange(1.0, 181.0)
 c, b = compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5)
@@ -104,13 +104,13 @@ in the ratio.
 
 ## Notebooks
 
-- [pastas_vs_nufftact.ipynb](https://github.com/jecampagne/nufftacf/blob/main/notebook/pastas_vs_nufftact.ipynb) —
+- [pastas_vs_nufftcf.ipynb](https://github.com/jecampagne/nufftcf/blob/main/notebook/pastas_vs_nufftcf.ipynb) —
   **irregularly-sampled** series, NUFFT path vs Pastas (Colab-ready).
-- [pastas_vs_nufftacf_regular.ipynb](https://github.com/jecampagne/nufftacf/blob/main/notebook/pastas_vs_nufftacf_regular.ipynb) —
+- [pastas_vs_nufftcf_regular.ipynb](https://github.com/jecampagne/nufftcf/blob/main/notebook/pastas_vs_nufftcf_regular.ipynb) —
   **regularly-sampled** series, classic-FFT path vs Pastas (Colab-ready).
-- [zdcf_vs_nufftacf.ipynb](https://github.com/jecampagne/nufftacf/blob/main/notebook/zdcf_vs_nufftacf.ipynb) —
-  **nufftacf** vs **pyZDCF** on the same irregularly-sampled series as above.
-- [nufftacf_ccf_demo.ipynb](https://github.com/jecampagne/nufftacf/blob/main/notebook/nufftacf_ccf_demo.ipynb) —
+- [zdcf_vs_nufftcf.ipynb](https://github.com/jecampagne/nufftcf/blob/main/notebook/zdcf_vs_nufftcf.ipynb) —
+  **nufftcf** vs **pyZDCF** on the same irregularly-sampled series as above.
+- [nufftcf_ccf_demo.ipynb](https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_ccf_demo.ipynb) —
   the **cross-correlation (CCF)** functions vs **pyZDCF**, including a case with two
   coupled Ornstein-Uhlenbeck series for which the theoretical CCF is known analytically.
 
@@ -122,12 +122,12 @@ See [Usage](usage.md) for the commands.
 
 ## Citing
 
-If you use `nufftacf`, please also cite FINUFFT:
+If you use `nufftcf`, please also cite FINUFFT:
 
 > A. H. Barnett, J. F. Magland, and L. af Klinteberg (2019).
 > *A parallel non-uniform fast Fourier transform library based on an
 > "exponential of semicircle" kernel.* SIAM J. Sci. Comput.  41(5), C479-C504. 
 > [github.com/flatironinstitute/finufft](https://github.com/flatironinstitute/finufft)
 
-> J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftacf
+> J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftcf
 

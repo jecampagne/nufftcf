@@ -1,15 +1,15 @@
-# nufftacf
+# nufftcf
 
-[![Tests](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml/badge.svg)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![Lint](https://github.com/jecampagne/nufftacf/actions/workflows/lint.yml/badge.svg)](https://github.com/jecampagne/nufftacf/actions/workflows/lint.yml)
+[![Tests](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml/badge.svg)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![Lint](https://github.com/jecampagne/nufftcf/actions/workflows/lint.yml/badge.svg)](https://github.com/jecampagne/nufftcf/actions/workflows/lint.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 
-[![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13%20|%203.14-blue)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![Linux](https://img.shields.io/badge/linux-ubuntu--latest-orange?logo=linux)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![macOS](https://img.shields.io/badge/macOS-latest%20(arm64)%20%7C%20intel-orange?logo=apple)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![macOS](https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
-[![Windows](https://img.shields.io/badge/windows-latest-orange?logo=windows)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13%20|%203.14-blue)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![Linux](https://img.shields.io/badge/linux-ubuntu--latest-orange?logo=linux)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![macOS](https://img.shields.io/badge/macOS-latest%20(arm64)%20%7C%20intel-orange?logo=apple)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![macOS](https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
+[![Windows](https://img.shields.io/badge/windows-latest-orange?logo=windows)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
 
 
 
@@ -18,7 +18,7 @@ for **irregularly- and regularly-sampled** time series, scaling as $O(n\log n)$
 thanks notably to the **Nonuniform Fast Fourier Transform** library developped by
 the Flatiron Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)).
 
-With **`nufftacf`** three estimator families are provided for the ACF:
+With **`nufftcf`** three estimator families are provided for the ACF:
 
 | Function | Sampling | Method | Scaling | Notes |
 |---|---|---|---|---|
@@ -64,41 +64,77 @@ instead (see the example below).
 
 For a worked comparison against **pyZDCF**, including a case with a known
 theoretical CCF, see
-[`notebook/nufftacf_ccf_demo.ipynb`](notebook/nufftacf_ccf_demo.ipynb).
+[`notebook/nufftcf_ccf_demo.ipynb`](notebook/nufftcf_ccf_demo.ipynb).
 
 ## Documentation
 
-https://jecampagne.github.io/nufftacf/
+https://jecampagne.github.io/nufftcf/
+
+### Build the documentation locally
+
+The docs are built with [MkDocs](https://www.mkdocs.org/) + the
+[Material](https://squidfunk.github.io/mkdocs-material/) theme, and
+[mkdocstrings](https://mkdocstrings.github.io/) generates the API
+Reference page directly from the package's numpy-style docstrings.
+
+```bash
+pip install -e ".[docs]"
+
+# live preview with auto-reload at http://127.0.0.1:8000
+mkdocs serve
+
+# or a static build into site/
+mkdocs build
+```
+
+Deploying to the `gh-pages` branch (maintainers only):
+
+```bash
+mkdocs gh-deploy
+```
 
 ## Installation
 
 ```bash
 # from a local clone
-git clone https://github.com/jecampagne/nufftacf.git
-cd nufftacf
-pip install -e .
-# or with the optional benchmark (Pastas + matplotlib) :
-pip install -e ".[benchmark]"
+git clone https://github.com/jecampagne/nufftcf.git
+cd nufftcf
+python3 -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install --upgrade pip
+
+# Force prebuilt wheels for the compiled dependencies (finufft, numba, llvmlite).
+# This avoids source builds that can fail or produce mismatched OpenMP runtimes,
+# particularly on macOS -- see docs/installation.md#troubleshooting-macos.
+pip install --only-binary=:all: finufft numba llvmlite
+
+pip install -e ".[dev,test,benchmark]"
 
 # from GitHub without any local clone
-pip install "nufftacf @ git+https://github.com/jecampagne/nufftacf.git"
+pip install "nufftcf @ git+https://github.com/jecampagne/nufftcf.git"
 ```
 
 Requires Python >= 3.11. Core dependencies: numpy, pandas, numba, scipy, finufft.
 
+If `pip install` fails to build `finufft` or `llvmlite` from source
+("Failed to build installable wheels..."), see
+[Troubleshooting (macOS)](docs/installation.md#troubleshooting-macos) --
+in most cases the `--only-binary=:all:` step above, run in a clean venv,
+resolves it.
+
 Check installation using `pytest>=7.0`
 ```bash
-cd nufftacf
+cd nufftcf
 pytest tests/ -v
 ```
-Let me know via the [repository issues](https://github.com/jecampagne/nufftacf/issues) if you encounter any troubles.
+Let me know via the [repository issues](https://github.com/jecampagne/nufftcf/issues) if you encounter any troubles.
 
 ## Quick start
 
 ```python
 import numpy as np
 import pandas as pd
-from nufftacf import compute_acf_gaussian_nufft, t_numeric_of
+from nufftcf import compute_acf_gaussian_nufft, t_numeric_of
 
 # An irregularly-sampled series (any DatetimeIndex works)
 idx = pd.date_range("2000-01-01", periods=5000, freq="D")[np.random.rand(5000) > 0.2]
@@ -118,7 +154,7 @@ c, b = compute_acf_gaussian_nufft(lags, t, x.to_numpy(), bin_width=0.5)
 ```python
 import numpy as np
 import pandas as pd
-from nufftacf import compute_ccf_gaussian_nufft
+from nufftcf import compute_ccf_gaussian_nufft
 
 # Two irregularly-sampled series on a COMMON time origin (elapsed days since
 # the same reference date), with y lagging behind x by tau0 = 60 days
@@ -205,25 +241,25 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
 
 ## Notebooks
 
-- [`pastas_vs_nufftact.ipynb`](notebook/pastas_vs_nufftact.ipynb)
-  compares **nufftacf** against **Pastas** on **irregularly**-sampled series
+- [`pastas_vs_nufftcf.ipynb`](notebook/pastas_vs_nufftcf.ipynb)
+  compares **nufftcf** against **Pastas** on **irregularly**-sampled series
   (sine and AR(1)-like, with random gaps), using the `_nufft` estimators.
-- [`pastas_vs_nufftacf_regular.ipynb`](notebook/pastas_vs_nufftacf_regular.ipynb)
+- [`pastas_vs_nufftcf_regular.ipynb`](notebook/pastas_vs_nufftcf_regular.ipynb)
   does the same on **regularly**-sampled series (sine, noisy sine,
   noisy exponential decay, square wave), using the `_fft` estimators,
   for all 3 of Pastas' bin methods (`regular`/`rectangle`/`gaussian`).
-- [`zdcf_vs_nufftacf.ipynb`](`notebook/zdcf_vs_nufftacf.ipynb) compares **nufftacf** against **pyzdcf** on the same **irregularly**-sampled series used in the `pastas_vs_nufftact.ipynb`.
-- [`nufftacf_ccf_demo.ipynb`](notebook/nufftacf_ccf_demo.ipynb) demonstrates the
+- [`zdcf_vs_nufftcf.ipynb`](notebook/zdcf_vs_nufftcf.ipynb) compares **nufftcf** against **pyzdcf** on the same **irregularly**-sampled series used in the `pastas_vs_nufftcf.ipynb`.
+- [`nufftcf_ccf_demo.ipynb`](notebook/nufftcf_ccf_demo.ipynb) demonstrates the
   **cross-correlation (CCF)** functions (`compute_ccf_gaussian_nufft`,
   `compute_ccf_rectangle_nufft`) against **pyZDCF**, including a case with two
   series built from coupled Ornstein-Uhlenbeck processes for which the
   theoretical CCF is known analytically.
 
-All are Colab-ready: the first cell installs **nufftacf** as well as **Pastas** or **pyzdcf** and third party libraries. Concerning **pyzdcf**, the repository was cloned and adapted to ensure compatibility with the pandas and other library versions used in this notebook, allowing it to run on Google Colab. These changes do not affect the quality of the computations.
+All are Colab-ready: the first cell installs **nufftcf** as well as **Pastas** or **pyzdcf** and third party libraries. Concerning **pyzdcf**, the repository was cloned and adapted to ensure compatibility with the pandas and other library versions used in this notebook, allowing it to run on Google Colab. These changes do not affect the quality of the computations.
 
 ## Method
 
-`nufftacf` is built on two ingredients:
+`nufftcf` is built on two ingredients:
 
 1. **[FINUFFT](https://github.com/flatironinstitute/finufft)** (Flatiron
    Institute) to evaluate the power spectrum of the irregularly-sampled
@@ -258,7 +294,7 @@ derivation, and `notebook/` / `benchmark/` for empirical validation.
   varying length, all 3 bin methods -- this is what lets you see, on
   regular data, how much the dedicated `_fft` path buys over just reusing
   the more general `_nufft` estimator.
-- no real benchmarks are provided to compare **nuffacf** against **pyzdcf**, although in the plots obtained in `zdcf_vs_nufftacf.ipynb` one can appreciate that **nufftacf** is ~2 order of magnitude faster. 
+- no real benchmarks are provided to compare **nufftcf** against **pyzdcf**, although in the plots obtained in `zdcf_vs_nufftcf.ipynb` one can appreciate that **nufftcf** is ~2 order of magnitude faster. 
 
 ```bash
 pip install -e ".[benchmark]"
@@ -280,18 +316,18 @@ assumed) at the top of each script as needed. Each measurement uses several
 repeats and keeps the minimum, to reduce noise from shared/cloud
 environments (Colab, background browser activity, etc.).
 
-`benchmark/*_macosx.{csv,png}` give the results on MacBook Pro (2020) 2 GHz Intel Core i5 quatre cœurs (osx Tahoe 26.5.1)-- re-run on your own machine for comaparison. You can share your results on the [Discussions](https://github.com/jecampagne/nufftacf/discussions) of the repository.
+`benchmark/*_macosx.{csv,png}` give the results on MacBook Pro (2020) 2 GHz Intel Core i5 quatre cœurs (osx Tahoe 26.5.1)-- re-run on your own machine for comaparison. You can share your results on the [Discussions](https://github.com/jecampagne/nufftcf/discussions) of the repository.
 
 ## Citing
 
-If you use `nufftacf`, please also cite FINUFFT, which it depends on:
+If you use `nufftcf`, please also cite FINUFFT, which it depends on:
 
 > A. H. Barnett, J. F. Magland, and L. af Klinteberg (2019).
 > *A parallel non-uniform fast Fourier transform library based on an
 > "exponential of semicircle" kernel.* SIAM J. Sci. Comput.  41(5), C479-C504.
 > https://github.com/flatironinstitute/finufft
 
-> J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftacf
+> J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftcf
 
 ## License
 
@@ -300,6 +336,7 @@ If you use `nufftacf`, please also cite FINUFFT, which it depends on:
 ## Development
 
 ```bash
+pip install --only-binary=:all: finufft numba llvmlite
 pip install -e ".[dev]"
 black .          # formatage
 pytest tests/    # tests
@@ -308,11 +345,13 @@ pytest tests/    # tests
 ## Tests
 
 ```bash
+pip install --only-binary=:all: finufft numba llvmlite
 pip install -e ".[test]"
 pytest tests/
 ```
 
-`tests/test_nufftacf.py` (NUFFT vs realspace, irregular data) and
+`tests/test_nufft_acf.py` (NUFFT vs realspace, irregular data),
+`tests/test_ccf.py` (NUFFT vs realspace, cross-correlation), and
 `tests/test_fft_acf.py` (fft vs realspace, and fft "regular" vs Pastas
 itself, regular data) are correctness/sanity checks, not performance
 benchmarks.
