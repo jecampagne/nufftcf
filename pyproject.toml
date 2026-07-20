@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "nufftcf"
 version = "0.1.0"
-description = "Fast autocorrelation (ACF) and cross-correlation (CCF) function estimation for irregularly- and regularly-sampled time series, via NUFFT + Numba-optimized real-space kernels (gaussian and rectangle)."
+description = "Fast autocorrelation and cross-correlation functions estimation for irregularly- and regularly-sampled time series, via NUFFT + Numba-optimized real-space kernels (gaussian and rectangle)."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
