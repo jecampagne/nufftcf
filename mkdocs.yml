@@ -1,7 +1,7 @@
 site_name: nufftcf
 site_url: https://jecampagne.github.io/nufftcf/
 site_description: >
-  Fast ACF estimation for irregularly- and regularly-sampled 1D signals,
+  Fast Auto & Cross correlatuon estimation for irregularly- and regularly-sampled 1D signals,
   via the Non-Uniform FFT (FINUFFT) and classic FFT.
 site_author: Jean-Eric Campagne
 repo_url: https://github.com/jecampagne/nufftcf
