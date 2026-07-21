@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml/badge.svg)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
 [![Lint](https://github.com/jecampagne/nufftcf/actions/workflows/lint.yml/badge.svg)](https://github.com/jecampagne/nufftcf/actions/workflows/lint.yml)
+[![PyPI version](https://img.shields.io/pypi/v/nufftcf.svg)](https://pypi.org/project/nufftcf/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 
@@ -96,7 +97,24 @@ mkdocs gh-deploy
 ## Installation
 
 ```bash
-# from a local clone
+pip install nufftcf
+```
+
+`finufft`, `numba`, and `llvmlite` are compiled dependencies; on some
+platforms (notably macOS) pip may try to build them from source and fail.
+If so, force prebuilt wheels first, in a fresh virtual environment:
+
+```bash
+pip install --only-binary=:all: finufft numba llvmlite
+pip install nufftcf
+```
+
+See [Troubleshooting](docs/installation.md#troubleshooting-macos) if you
+still hit a build error.
+
+### From a local clone (for contributors / running notebooks and benchmarks)
+
+```bash
 git clone https://github.com/jecampagne/nufftcf.git
 cd nufftcf
 python3 -m venv venv
@@ -109,18 +127,9 @@ pip install --upgrade pip
 pip install --only-binary=:all: finufft numba llvmlite
 
 pip install -e ".[dev,test,benchmark]"
-
-# from GitHub without any local clone
-pip install "nufftcf @ git+https://github.com/jecampagne/nufftcf.git"
 ```
 
 Requires Python >= 3.11. Core dependencies: numpy, pandas, numba, scipy, finufft.
-
-If `pip install` fails to build `finufft` or `llvmlite` from source
-("Failed to build installable wheels..."), see
-[Troubleshooting (macOS)](docs/installation.md#troubleshooting-macos) --
-in most cases the `--only-binary=:all:` step above, run in a clean venv,
-resolves it.
 
 Check installation using `pytest>=7.0`
 ```bash

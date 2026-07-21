@@ -5,7 +5,28 @@
 Python >= 3.11. Core dependencies (installed automatically): `numpy`, `pandas`,
 `numba`, `scipy`, `finufft`.
 
-## Recommended: install from a local clone
+## Recommended: install from PyPI
+
+```bash
+pip install nufftcf
+```
+
+`finufft`, `numba`, and `llvmlite` are compiled dependencies; on some
+platforms (notably macOS) pip may try to build them from source and fail.
+If so, force prebuilt wheels first, in a fresh virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install --upgrade pip
+pip install --only-binary=:all: finufft numba llvmlite
+pip install nufftcf
+```
+
+See [Troubleshooting](#troubleshooting-macos) below if you still hit a
+build error.
+
+## From a local clone (contributors, notebooks, benchmarks)
 
 ```bash
 git clone https://github.com/jecampagne/nufftcf.git
@@ -32,7 +53,7 @@ pip install -e ".[dev,test,benchmark]"
     delete the venv and start over (`rm -rf venv`) rather than re-running
     the wheel-only install on top of a partially-failed environment.
 
-## Install directly from GitHub
+## Install the unreleased development version from GitHub
 
 ```bash
 # recommended: force prebuilt wheels first, in a fresh venv (see note below)
