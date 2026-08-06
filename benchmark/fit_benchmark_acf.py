@@ -32,6 +32,21 @@ import matplotlib.pyplot as plt
 from scipy.optimize import least_squares
 
 
+
+import matplotlib as mpl
+mpl.rcParams.update({
+    'font.size'         : 13,
+    'axes.titlesize'    : 14,
+    'axes.titleweight'  : 'bold',
+    'axes.labelsize'    : 14,
+    'xtick.labelsize'   : 14,
+    'ytick.labelsize'   : 14,
+    'legend.fontsize'   : 12,
+    'figure.titlesize'  : 16,
+    'figure.titleweight': 'bold',
+})
+
+
 # ============================================================
 # 1. Models
 # ============================================================
@@ -44,8 +59,8 @@ def model_nufft(n, a, ovh):
 
 
 MODELS = {
-    "pastas": (model_pastas, "a*n^2 + overhead"),
-    "nufft": (model_nufft, "a*n*ln(n) + overhead"),
+    "pastas": (model_pastas, f"$a.n^2 + overhead$"),
+    "nufft": (model_nufft, f"$a.n.\ln(n) + overhead$"),
 }
 
 
@@ -153,7 +168,7 @@ def analyze_group(df, kernel, algo, n_boot, seed):
 # ============================================================
 # 5. Plot
 # ============================================================
-def plot_results(results, outfile):
+def plot_results(results, outfile, show_fit_res=True):
     kernels = sorted(set(r["kernel"] for r in results))
     fig, axes = plt.subplots(
         1, len(kernels), figsize=(7 * len(kernels), 6), sharey=True
@@ -191,103 +206,43 @@ def plot_results(results, outfile):
                 np.log10(r["n_values"].min()), np.log10(n_max_all), 200
             )
             fit_curve = r["model_func"](n_grid, r["a"], r["ovh_ms"] / 1000)
+            if show_fit_res:
+                label_info = (
+                    f"fit {r['model']} (a={r['a']:.2e}$\pm${r['a_err']:.1e}, "
+                    f"ovh={r['ovh_ms']:.1f}$\pm${r['ovh_err_ms']:.1f} ms, "
+                    f"$R^2$={r['r2']:.3f})"
+                )
+            else:
+                label_info = (
+                    f"fit {r['model']} ($R^2$={r['r2']:.3f})"
+                )
             ax.plot(
                 n_grid,
                 fit_curve,
                 linestyles[algo],
                 color=colors[algo],
-                label=(
-                    f"fit {r['model']} (a={r['a']:.2e}\u00b1{r['a_err']:.1e}, "
-                    f"ovh={r['ovh_ms']:.1f}\u00b1{r['ovh_err_ms']:.1f} ms, "
-                    f"R\u00b2={r['r2']:.3f})"
-                ),
+                label=label_info,
             )
 
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("Number of points in series")
         ax.set_title(f"{kernel} kernel")
-        ax.legend(fontsize=8)
+        fontsz = 8 if show_fit_res else mpl.rcParams['legend.fontsize']
+        ax.legend(fontsize=fontsz)
         ax.grid(True, which="both", alpha=0.3)
 
     axes[0].set_ylabel("Computation time [s]")
-    fig.suptitle(
-        "ACF benchmark: Pastas vs nufftcf -- robust fit (soft_l1)\n"
-        "error bars show the min-to-max spread across repeats at each point"
-    )
+    if show_fit_res:
+        fig.suptitle(
+            "ACF benchmark (irregular data): Pastas vs nufftcf -- robust fit (soft_l1)\n"
+            "error bars show the min-to-max spread across repeats at each point"
+        )
+    else:
+        fig.suptitle("ACF benchmark (irregular data): Pastas vs nufftcf")
     plt.tight_layout()
-    plt.savefig(outfile, dpi=150)
+    plt.savefig(outfile, format="pdf", bbox_inches="tight", dpi=200)
     print(f"Figure saved: {outfile}")
-
-
-def plot2_results(results, outfile):
-    kernels = sorted(set(r["kernel"] for r in results))
-    if len(kernels) > 2:
-        print(">2 kernels not yet taken into account")
-        return
-
-    fig1, ax1 = plt.subplots(1, 1, figsize=(7, 6))
-    if len(kernels) == 1:
-        axes = [ax1]
-        figs = [fig1]
-    elif len(kernels) > 1:
-        fig2, ax2 = plt.subplots(1, 1, figsize=(7, 6))
-        axes = [ax1, ax2]
-        figs = [fig1, fig2]
-
-    colors = {"pastas": "tab:blue", "nufft": "tab:red"}
-    markers = {"pastas": "o", "nufft": "s"}
-    linestyles = {"pastas": "--", "nufft": ":"}
-
-    for ax, kernel, fig in zip(axes, kernels, figs):
-        n_min_all, n_max_all = np.inf, 0
-        for algo in ("pastas", "nufft"):
-            r = next(
-                (x for x in results if x["kernel"] == kernel and x["algo"] == algo),
-                None,
-            )
-            if r is None:
-                continue
-            n_min_all = min(n_min_all, r["n_values"].min())
-            n_max_all = max(n_max_all, r["n_values"].max())
-
-            ax.errorbar(
-                r["n_values"],
-                r["t_min"],
-                yerr=[np.zeros_like(r["spread"]), r["spread"]],
-                fmt=markers[algo],
-                color=colors[algo],
-                capsize=3,
-                label=f"{algo} -- data",
-            )
-
-            n_grid = np.logspace(
-                np.log10(r["n_values"].min()), np.log10(n_max_all), 200
-            )
-            fit_curve = r["model_func"](n_grid, r["a"], r["ovh_ms"] / 1000)
-            ax.plot(
-                n_grid,
-                fit_curve,
-                linestyles[algo],
-                color=colors[algo],
-                label=(
-                    f"fit {r['model']} (a={r['a']:.2e}\u00b1{r['a_err']:.1e}, "
-                    f"ovh={r['ovh_ms']:.1f}\u00b1{r['ovh_err_ms']:.1f} ms, "
-                    f"R\u00b2={r['r2']:.3f})"
-                ),
-            )
-
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.set_xlabel("Number of points in series")
-        ax.set_title(f"{kernel} kernel")
-        ax.legend(fontsize=8)
-        ax.grid(True, which="both", alpha=0.3)
-
-        ax.set_ylabel("Computation time [s]")
-        fig.suptitle("ACF benchmark: Pastas vs nufftcf")
-        fig.savefig(f"{kernel}_{outfile}", dpi=150)
-        print(f"Figure saved:{kernel}_{outfile}")
 
 
 # ============================================================
@@ -315,6 +270,14 @@ if __name__ == "__main__":
         default="benchmark_acf",
         help="Prefix for output files (figure and fit summary CSV).",
     )
+    parser.add_argument(
+        "--no-save-fit-res",
+        dest="save_fit_res",
+        action="store_false",
+        default=True,
+        help="Disable saving the fit results (enabled by default).",
+    )
+
     args = parser.parse_args()
 
     df = pd.read_csv(args.csv_path)
@@ -356,4 +319,4 @@ if __name__ == "__main__":
     summary_df.to_csv(summary_csv, index=False)
     print(f"\nFit summary saved: {summary_csv}")
 
-    plot2_results(results, f"{args.output_prefix}_fit.png")
+    plot_results(results, f"{args.output_prefix}_fit.pdf",  show_fit_res=args.save_fit_res)

@@ -30,6 +30,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import least_squares
 
+import matplotlib as mpl
+mpl.rcParams.update({
+    'font.size'         : 13,
+    'axes.titlesize'    : 14,
+    'axes.titleweight'  : 'bold',
+    'axes.labelsize'    : 14,
+    'xtick.labelsize'   : 14,
+    'ytick.labelsize'   : 14,
+    'legend.fontsize'   : 12,
+    'figure.titlesize'  : 16,
+    'figure.titleweight': 'bold',
+})
 
 # ============================================================
 # 1. Models
@@ -48,16 +60,16 @@ def model_nlogn(n, a, ovh):
 
 # Default model per algo ...
 ALGO_MODELS = {
-    "pastas": (model_quadratic, "a*n^2 + overhead"),
-    "fft": (model_nlogn, "a*n*ln(n) + overhead"),
-    "nufft": (model_nlogn, "a*n*ln(n) + overhead"),
+    "pastas": (model_quadratic, f"$a.n^2 + overhead$"),
+    "fft": (model_nlogn, f"$a.n.\ln(n) + overhead$"),
+    "nufft": (model_nlogn, f"$a.n.\ln(n) + overhead$"),
 }
 # ... overridden for the one case that scales differently: Pastas has no
 # smoothing kernel to apply in "regular" mode, just a fixed-size windowed
 # np.corrcoef per lag, so it doesn't pay the O(n^2) cost the slotting
 # technique incurs for "gaussian"/"rectangle".
 MODEL_OVERRIDE = {
-    ("regular", "pastas"): (model_linear, "a*n + overhead"),
+    ("regular", "pastas"): (model_linear, f"$a.n + overhead$"),
 }
 
 
@@ -165,7 +177,7 @@ MARKERS = {"pastas": "o", "fft": "s", "nufft": "^"}
 LINESTYLES = {"pastas": "--", "fft": ":", "nufft": "-."}
 
 
-def plot_results(results, output_prefix):
+def plot_results(results, output_prefix, show_fit_res=True):
     kernels = sorted(set(r["kernel"] for r in results))
     for kernel in kernels:
         fig, ax = plt.subplots(figsize=(7, 6))
@@ -190,28 +202,35 @@ def plot_results(results, output_prefix):
                 np.log10(r["n_values"].min()), np.log10(n_max_all), 200
             )
             fit_curve = r["model_func"](n_grid, r["a"], r["ovh_ms"] / 1000)
+            if show_fit_res:
+                label_info = (
+                    f"fit {r['model']} (a={r['a']:.2e}$\pm${r['a_err']:.1e}, "
+                    f"ovh={r['ovh_ms']:.1f}$\pm${r['ovh_err_ms']:.1f} ms, "
+                    f"$R^2$={r['r2']:.3f})"
+                )
+            else:
+                label_info = (
+                                f"fit {r['model']} ($R^2$={r['r2']:.3f})"
+                            )
             ax.plot(
                 n_grid,
                 fit_curve,
                 LINESTYLES[algo],
                 color=COLORS[algo],
-                label=(
-                    f"fit {r['model']} (a={r['a']:.2e}$\pm${r['a_err']:.1e}, "
-                    f"ovh={r['ovh_ms']:.1f}$\pm${r['ovh_err_ms']:.1f} ms, "
-                    f"$R^2$={r['r2']:.3f})"
-                ),
+                label=label_info,
             )
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("Number of points in series")
         ax.set_ylabel("Computation time [s]")
-        ax.set_title(f"{kernel} (regular sampling)")
-        ax.legend(fontsize=8)
+        ax.set_title(f"{kernel}")
+        fontsz = 8 if show_fit_res else mpl.rcParams['legend.fontsize']
+        ax.legend(fontsize=fontsz)
         ax.grid(True, which="both", alpha=0.3)
         fig.suptitle("ACF benchmark (regular data): Pastas vs nufftcf (fft / nufft)")
         plt.tight_layout()
-        outfile = f"{kernel}_{output_prefix}_fit.png"
-        fig.savefig(outfile, dpi=150)
+        outfile = f"{kernel}_{output_prefix}_fit.pdf"
+        fig.savefig(outfile, format="pdf", bbox_inches="tight", dpi=200)
         print(f"Figure saved: {outfile}")
 
 
@@ -226,6 +245,13 @@ if __name__ == "__main__":
     parser.add_argument("--n-boot", type=int, default=500)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--output-prefix", default="benchmark_acf_regular")
+    parser.add_argument(
+            "--no-save-fit-res",
+            dest="save_fit_res",
+            action="store_false",
+            default=True,
+            help="Disable saving the fit results (enabled by default).",
+        )
     args = parser.parse_args()
 
     df = pd.read_csv(args.csv_path)
@@ -267,4 +293,4 @@ if __name__ == "__main__":
     summary_df.to_csv(summary_csv, index=False)
     print(f"\nFit summary saved: {summary_csv}")
 
-    plot_results(results, args.output_prefix)
+    plot_results(results, args.output_prefix, show_fit_res=args.save_fit_res)
