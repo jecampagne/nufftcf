@@ -32,19 +32,21 @@ import matplotlib.pyplot as plt
 from scipy.optimize import least_squares
 
 
-
 import matplotlib as mpl
-mpl.rcParams.update({
-    'font.size'         : 13,
-    'axes.titlesize'    : 14,
-    'axes.titleweight'  : 'bold',
-    'axes.labelsize'    : 14,
-    'xtick.labelsize'   : 14,
-    'ytick.labelsize'   : 14,
-    'legend.fontsize'   : 12,
-    'figure.titlesize'  : 16,
-    'figure.titleweight': 'bold',
-})
+
+mpl.rcParams.update(
+    {
+        "font.size": 13,
+        "axes.titlesize": 14,
+        "axes.titleweight": "bold",
+        "axes.labelsize": 14,
+        "xtick.labelsize": 14,
+        "ytick.labelsize": 14,
+        "legend.fontsize": 12,
+        "figure.titlesize": 16,
+        "figure.titleweight": "bold",
+    }
+)
 
 
 # ============================================================
@@ -213,9 +215,7 @@ def plot_results(results, outfile, show_fit_res=True):
                     f"$R^2$={r['r2']:.3f})"
                 )
             else:
-                label_info = (
-                    f"fit {r['model']} ($R^2$={r['r2']:.3f})"
-                )
+                label_info = f"fit {r['model']} ($R^2$={r['r2']:.3f})"
             ax.plot(
                 n_grid,
                 fit_curve,
@@ -228,7 +228,7 @@ def plot_results(results, outfile, show_fit_res=True):
         ax.set_yscale("log")
         ax.set_xlabel("Number of points in series")
         ax.set_title(f"{kernel} kernel")
-        fontsz = 8 if show_fit_res else mpl.rcParams['legend.fontsize']
+        fontsz = 8 if show_fit_res else mpl.rcParams["legend.fontsize"]
         ax.legend(fontsize=fontsz)
         ax.grid(True, which="both", alpha=0.3)
 
@@ -319,4 +319,6 @@ if __name__ == "__main__":
     summary_df.to_csv(summary_csv, index=False)
     print(f"\nFit summary saved: {summary_csv}")
 
-    plot_results(results, f"{args.output_prefix}_fit.pdf",  show_fit_res=args.save_fit_res)
+    plot_results(
+        results, f"{args.output_prefix}_fit.pdf", show_fit_res=args.save_fit_res
+    )
