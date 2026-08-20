@@ -263,6 +263,23 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
   `compute_ccf_rectangle_nufft`) against **pyZDCF**, including a case with two
   series built from coupled Ornstein-Uhlenbeck processes for which the
   theoretical CCF is known analytically.
+- [`nufftcf_astro_demo.ipynb`](notebook/nufftcf_astro_demo.ipynb) is an
+  **astrophysics-flavoured** use-case of the ACF estimators on
+  a synthetic stellar light curve combining a quasi-periodic rotation signal
+  (sinusoid of period `P_rot` with a slowly-evolving amplitude, modeling spot
+  evolution), a fast Ornstein-Uhlenbeck **correlated-noise** component
+  (flicker/granulation-like), a **ground-based survey sampling**
+  (seasonal observability window + random weather losses, i.e. structured
+  gaps rather than uniform sub-sampling) and **heteroscedastic** per-point
+  measurement noise -- for which the ACF of the latent process is known
+  analytically in closed form. `compute_acf_gaussian_realspace` and
+  `compute_acf_gaussian_nufft` are run on the sparse, noisy light curve and
+  checked against this ground truth; the rotation period `P_rot` and the
+  noise correlation time `tau_n` are then recovered from the estimated ACF
+  by peak search and a composite-model fit (with the associated identifiability
+  and measurement-noise-dilution subtleties discussed in the notebook), and
+  the recovery is validated over many independent survey realizations
+  (Monte Carlo over seeds).
 
 All are Colab-ready: the first cell installs **nufftcf** as well as **Pastas** or **pyzdcf** and third party libraries. Concerning **pyzdcf**, the repository was cloned and adapted to ensure compatibility with the pandas and other library versions used in this notebook, allowing it to run on Google Colab. These changes do not affect the quality of the computations.
 
