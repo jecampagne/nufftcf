@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-benchmark = ["pastas>=1.0", "matplotlib>=3.5"]
+benchmark = ["pastas>=1.0", "matplotlib>=3.5", "tqdm"]
 test = ["pytest>=7.0"]
 dev = ["black>=24.0", "pytest>=7.0"]
 docs = [
