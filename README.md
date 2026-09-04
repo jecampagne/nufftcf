@@ -353,7 +353,9 @@ If you use `nufftcf`, please also cite FINUFFT, which it depends on:
 > "exponential of semicircle" kernel.* SIAM J. Sci. Comput.  41(5), C479-C504.
 > https://github.com/flatironinstitute/finufft
 
-> J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftcf
+> *Jean-Eric Campagne (2026)*
+[arXiv:2609.03866](https://arxiv.org/abs/2609.03866)   [PDF](https://arxiv.org/pdf/2609.03866)
+*Class: astro-ph.IM*: **nufftcf: Fast Auto- and Cross-Correlation Function Estimation for Irregularly-Sampled Time Series via the Non-Uniform FFT**
 
 ## License
 
