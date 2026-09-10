@@ -281,6 +281,23 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
   the recovery is validated over many independent survey realizations
   (Monte Carlo over seeds).
 
+[`nufftcf_demo_ccf_Emmanoulopoulos.ipynb`](notebook/nufftcf_demo_ccf_Emmanoulopoulos.ipynb)
+  is a **cross-correlation, reverberation-mapping-flavoured** use-case of the
+  CCF estimators on a synthetic pair of AGN/blazar-like light curves. A single
+  latent series is drawn with the Emmanoulopoulos algorithm
+  ([`gammapy_SyLC`](https://github.com/cgalelli/gammapy_SyLC), power-law PSD +
+  log-normal PDF), from which an *optical* and a *gamma-ray* band are derived
+  with independent seasonal-survey sampling, a known injected delay
+  (`lag_days=15` d) and independent, heteroscedastic per-band measurement
+  noise. `compute_ccf_gaussian_nufft`, `compute_ccf_rectangle_nufft` and
+  `compute_ccf_gaussian_realspace` are checked for mutual consistency on this
+  sparse, dual-cadence pair; the injected delay is recovered by peak search
+  with a confidence interval, and its significance is assessed via Monte
+  Carlo over many independent, uncorrelated gamma-ray realizations. The
+  notebook closes on why the recovered peak falls below 1 -- mainly
+  measurement-noise dilution, with sampling and edge effects as secondary
+  contributors.
+
 All are Colab-ready: the first cell installs **nufftcf** as well as **Pastas** or **pyzdcf** and third party libraries. Concerning **pyzdcf**, the repository was cloned and adapted to ensure compatibility with the pandas and other library versions used in this notebook, allowing it to run on Google Colab. These changes do not affect the quality of the computations.
 
 ## Method
