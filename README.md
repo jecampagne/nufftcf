@@ -280,8 +280,7 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
   and measurement-noise-dilution subtleties discussed in the notebook), and
   the recovery is validated over many independent survey realizations
   (Monte Carlo over seeds).
-
-[`nufftcf_demo_ccf_Emmanoulopoulos.ipynb`](notebook/nufftcf_demo_ccf_Emmanoulopoulos.ipynb)
+- [`nufftcf_demo_ccf_Emmanoulopoulos.ipynb`](notebook/nufftcf_demo_ccf_Emmanoulopoulos.ipynb)
   is a **cross-correlation, reverberation-mapping-flavoured** use-case of the
   CCF estimators on a synthetic pair of AGN/blazar-like light curves. A single
   latent series is drawn with the Emmanoulopoulos algorithm
