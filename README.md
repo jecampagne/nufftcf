@@ -291,7 +291,7 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
   noise. `compute_ccf_gaussian_nufft`, `compute_ccf_rectangle_nufft` and
   `compute_ccf_gaussian_realspace` are checked for mutual consistency on this
   sparse, dual-cadence pair; the injected delay is recovered by peak search
-  with a confidence interval, and its significance is assessed via Monte
+  with a confidence interval obtained by bootstapping, and its significance is assessed via Monte
   Carlo over many independent, uncorrelated gamma-ray realizations. The
   notebook closes on why the recovered peak falls below 1 -- mainly
   measurement-noise dilution, with sampling and edge effects as secondary
