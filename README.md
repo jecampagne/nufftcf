@@ -49,12 +49,23 @@ sampling times:
 | `compute_ccf_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)$ | same caveat as above |
 | `compute_ccf_gaussian_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
 | `compute_ccf_rectangle_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
+| `compute_ccf_rectangle_fft` | **regular, same dt/lattice only** | classic FFT cross-correlation + box filter | $\sim~O(n\log n)$ | faster than `_nufft`/`_realspace` when both series share a sampling grid (no NUFFT/numba overhead) |
+| `compute_ccf_gaussian_fft` | **regular, same dt/lattice only** | classic FFT cross-correlation + gaussian filter | $\sim~O(n\log n)$ | same |
 
-All four share the calling convention `fn(lags, t, x, s, y, bin_width=0.5)`
+All six share the calling convention `fn(lags, t, x, s, y, bin_width=0.5)`
 and return `(c, b)` -- the CCF estimate (Pearson-normalised, `c ~ 1` at
 perfect correlation) and the effective pair count, both shape `(len(lags),)`.
 By convention, a positive lag means `y` lags behind `x` (i.e. the CCF peaks
 at `lag = tau0` when `y(t) ~ x(t - tau0)`).
+
+`compute_ccf_rectangle_fft` / `compute_ccf_gaussian_fft` (in `fft_ccf.py`)
+are the CCF counterparts of `compute_acf_rectangle_fft` /
+`compute_acf_gaussian_fft`: they require `t` and `s` to each be regularly
+spaced with the *same* sampling step, and to lie on a common integer
+sampling lattice (`s[0] - t[0]` a multiple of `dt`) -- raising `ValueError`
+otherwise, in which case use the `nufft` or `realspace` estimators instead.
+There is no `_regular` (no-kernel) CCF variant, since none exists for the
+`nufft`/`realspace` families either.
 
 **Important:** `t` and `s` must be expressed on a *common* time origin (e.g.
 elapsed days since the same reference date for both series). `t_numeric_of`
@@ -395,7 +406,8 @@ pytest tests/
 ```
 
 `tests/test_nufft_acf.py` (NUFFT vs realspace, irregular data),
-`tests/test_ccf.py` (NUFFT vs realspace, cross-correlation), and
+`tests/test_ccf.py` (NUFFT vs realspace, cross-correlation),
 `tests/test_fft_acf.py` (fft vs realspace, and fft "regular" vs Pastas
-itself, regular data) are correctness/sanity checks, not performance
-benchmarks.
+itself, regular data), and `tests/test_fft_ccf.py` (fft vs realspace
+cross-correlation, regular data) are correctness/sanity checks, not
+performance benchmarks.
