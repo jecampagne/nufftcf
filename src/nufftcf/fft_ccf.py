@@ -10,10 +10,7 @@ NUFFT -- a plain FFT cross-correlation plus a cheap smoothing pass gives
 the *exact same* gaussian/rectangle CCF estimator as `nufft_ccf.py` /
 `realspace_ccf.py`, faster and with no finufft dependency in the hot path.
 
-Two estimators are provided, mirroring `nufft_ccf.py` / `realspace_ccf.py`
-(there is no `_regular` no-kernel CCF variant, since none exists for the
-`nufft`/`realspace` families either -- a windowed Pearson CCF isn't part of
-this package's API):
+Two estimators are provided, mirroring `nufft_ccf.py` / `realspace_ccf.py`:
 
 - `compute_ccf_rectangle_fft` : same rectangular-kernel definition as
                                   `compute_ccf_rectangle_nufft`/`_realspace`.

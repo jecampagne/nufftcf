@@ -54,7 +54,12 @@ from .fft_ccf import (
 )
 from .utils import t_numeric_of, standardize
 
-__version__ = "0.1.0"
+from importlib import metadata as _metadata
+
+try:
+    __version__ = _metadata.version("nufftcf")
+except _metadata.PackageNotFoundError:  # e.g. running from an uninstalled checkout
+    __version__ = "unknown"
 
 __all__ = [
     "compute_acf_gaussian_nufft",
