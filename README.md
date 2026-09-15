@@ -19,6 +19,8 @@ for **irregularly- and regularly-sampled** time series, scaling as $O(n\log n)$
 thanks notably to the **Nonuniform Fast Fourier Transform** library developped by
 the Flatiron Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)).
 
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
 With **`nufftcf`** three estimator families are provided for the ACF:
 
 | Function | Sampling | Method | Scaling | Notes |
