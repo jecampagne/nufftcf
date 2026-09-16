@@ -1,0 +1,58 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "nufftcf: Non-Uniform FFT based Auto- and Cross-Correlation functions"
+type: software
+authors:
+  - family-names: "Campagne"
+    given-names: "Jean-Eric"
+    affiliation: "Laboratoire de Physique des 2 infinis Irène Joliot-Curie – IJCLab"
+    orcid: "https://orcid.org/0000-0002-1590-6927"
+
+preferred-citation:
+  type: article
+  title: "nufftcf: Fast Auto- and Cross-Correlation Function Estimation for Irregularly-Sampled Time Series via the Non-Uniform FFT"
+  authors:
+    - family-names: "Campagne"
+      given-names: "Jean-Eric"
+  year: 2026
+  journal: "arXiv"
+  identifiers:
+    - type: other
+      value: "arXiv:2609.03866"
+      description: "ArXiv preprint ID"
+  url: "https://arxiv.org/abs/2609.03866"
+references:
+  - type: software
+    title: "FINUFFT: a parallel non-uniform fast Fourier transform library based on an exponential of semicircle kernel"
+    authors:
+      - family-names: "Barnett"
+        given-names: "A. H."
+      - family-names: "Magland"
+        given-names: "J. F."
+      - family-names: "af Klinteberg"
+        given-names: "L."
+    year: 2019
+    journal: "SIAM Journal on Scientific Computing"
+    volume: 41
+    issue: 5
+    start: "C479"
+    end: "C504"
+    repository-code: "https://github.com/flatironinstitute/finufft"
+repository-code: "https://github.com/jecampagne/nufftcf"
+url: "https://jecampagne.github.io/nufftcf/"
+license: MIT
+keywords:
+  - timeseries
+  - signal-processing
+  - acf
+  - ccf
+  - fft
+  - nufft
+  - irregular-sampling
+  - auto-correlation
+  - cross-correlation
+abstract: >-
+  Fast auto-correlation (ACF) and cross-correlation (CCF) function
+  estimation for irregularly- and regularly-sampled 1D signals,
+  scaling as O(n log n) via the Non-Uniform FFT (FINUFFT) and
+  classic FFT.
