@@ -5,7 +5,7 @@ All notable changes to `nufftcf` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Ø.1.4] - 2026-09-16
+## [0.1.4] - 2026-09-16
 - CITATION.cff, DOI Zenodo, README
 
 ## [0.1.2] - 2026-09-15
