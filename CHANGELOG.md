@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   time series, plus a fast FFT-based ACF path (`regular`, `rectangle`,
   `gaussian`) for regularly-sampled data.
 
+[0.1.4]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.4
 [0.1.2]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.2
 [0.1.1]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.1
 [0.1.0]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.0
