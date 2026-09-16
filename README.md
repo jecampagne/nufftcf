@@ -12,7 +12,7 @@
 [![macOS](https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
 [![Windows](https://img.shields.io/badge/windows-latest-orange?logo=windows)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
 
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22791194.svg)](https://doi.org/10.5281/zenodo.22791194)
 
 Fast **autocorrelation** (ACF) and **cross-correlation** (CCF) function estimation
 for **irregularly- and regularly-sampled** time series, scaling as $O(n\log n)$
