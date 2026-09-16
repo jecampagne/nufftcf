@@ -55,3 +55,34 @@ jobs:
           path: dist/
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # requis pour créer une GitHub Release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract this version's CHANGELOG.md section
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Regex-escape dots in the version before matching a CHANGELOG.md
+          # "## [X.Y.Z]" heading, so "0.1.2" doesn't loosely match "0X1X2".
+          ESCAPED_VERSION=$(echo "$VERSION" | sed 's/\./\\./g')
+          awk -v ver="$ESCAPED_VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { found=1; print; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+          echo "----- Extracted release notes -----"
+          cat release_notes.md
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: release_notes.md
+          generate_release_notes: true   # appends an auto commit/PR list after the body above
+          make_latest: "true"
+          # If body_path ends up empty (e.g. CHANGELOG.md wasn't updated for
+          # this tag), the release is still created with just the
+          # auto-generated notes -- this step never blocks the release.
