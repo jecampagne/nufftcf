@@ -76,9 +76,39 @@ for two independently-sampled series -- using it separately on `x` and `y`
 would silently misalign the lags. Build `t`/`s` from a shared reference date
 instead (see the example below).
 
-For a worked comparison against **pyZDCF**, including a case with a known
-theoretical CCF, see
-[`notebook/nufftcf_ccf_demo.ipynb`](notebook/nufftcf_ccf_demo.ipynb).
+**⚠️ Known limitation: lags close to the total data span**
+>
+> `compute_ccf_rectangle_nufft` and `compute_ccf_gaussian_nufft` are validated
+> (see `notebook/zdcf_vs_nufftcf.ipynb`, `notebook/pastas_vs_nufftcf*.ipynb`)
+> for lags that are small compared to the total time span of the data
+> (`t.max() - t.min()`), the typical regime for the targeted applications
+> (e.g. `lag_max` <~ 5% of the span in the validation notebooks).
+>
+> Beyond that, a spurious periodic wrap-around can appear: the NUFFT
+> roundtrip (`_nufft_cross_spectrum_at_lags`) maps time onto a
+> `[0, 2*pi)` domain via `span = t.max() - t.min()`, which makes the
+> computation implicitly periodic with period `span`. As the requested lag
+> approaches this span, unphysical "edge" contributions contaminate the CCF
+> numerator, while the denominator `b` (pair count, linear/non-periodic)
+> does not account for them. The ratio can then fall outside the `[-1, 1]`
+> range expected for a Pearson CCF, and diverge markedly from
+> `compute_ccf_rectangle_fft` / `_realspace` (which remain correct over the
+> full range tested).
+>
+> **This threshold is not a universal fraction**: it depends on the signal.
+> For a process with a decaying autocorrelation (Ornstein-Uhlenbeck-like,
+> see validation notebook), agreement with `_realspace` stays good up to
+> `lag/span ~ 0.3-0.4`. For a signal that is exactly periodic over the full
+> observation window (a particularly unfavorable case), the same comparison
+> already degrades beyond `lag/span ~ 0.05-0.08`.
+>
+> **Recommendation**: if your data are on a regular grid, prefer
+> `compute_ccf_rectangle_fft` / `compute_ccf_gaussian_fft` (same results,
+> without this risk). Otherwise, check `lag_max` against
+> `compute_ccf_*_realspace` on a subset of your lags before trusting the
+> NUFFT version far from `lag=0`, especially if `lag_max` exceeds ~10-20%
+> of the total span of your data.
+
 
 ## Documentation
 
