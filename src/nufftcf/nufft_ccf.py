@@ -22,7 +22,7 @@ import numpy as np
 import finufft
 from scipy.ndimage import gaussian_filter1d, uniform_filter1d
 
-from .utils import standardize
+from .utils import standardize, effective_span, padded_angular_map
 from .kernels import (
     compute_b_gaussian,
     compute_b_rectangle,
@@ -41,15 +41,21 @@ def _common_time_norm(t, s):
     return t_min, span
 
 
-def _nufft_cross_spectrum_at_lags(t, x, s, y, lags, N1, eps):
-    """NUFFT cross-spectrum X̂*(f)·Ŷ(f) evaluated at the requested lags."""
+def _nufft_cross_spectrum_at_lags(t, x, s, y, lags, eff_span, N1, eps):
+    """NUFFT cross-spectrum X̂*(f)·Ŷ(f) evaluated at the requested lags.
+
+    `eff_span` (>= the true union span of t and s) sets the periodic-domain
+    size used for the NUFFT mapping; see `utils.effective_span` /
+    `utils.padded_angular_map` for why this is needed to avoid a spurious
+    periodic wrap-around contaminating lags close to the data's span.
+    """
     xc = x.astype(np.complex128)
     yc = y.astype(np.complex128)
 
     t_min, span = _common_time_norm(t, s)
-    t_norm = (t - t_min) / span * (2 * np.pi)
-    s_norm = (s - t_min) / span * (2 * np.pi)
-    lags_norm = lags / span * (2 * np.pi)
+    t_norm = padded_angular_map(t, t_min, span, eff_span)
+    s_norm = padded_angular_map(s, t_min, span, eff_span)
+    lags_norm = lags / eff_span * (2 * np.pi)
 
     if N1 is None:
         N1 = 32 * max(len(x), len(y))
@@ -60,20 +66,28 @@ def _nufft_cross_spectrum_at_lags(t, x, s, y, lags, N1, eps):
     return finufft.nufft1d2(lags_norm, mul, eps=eps).real
 
 
-def _acf_scale_at_lag0(t, x_std, t_min, span, N1, eps, bin_width, kernel):
+def _acf_scale_at_lag0(t, x_std, t_min, span, eff_span, N1, eps, bin_width, kernel):
     """Smoothed ACF scale at lag=0 using the COMMON time span.
 
-    The critical detail: lag=0 is placed at an INTERIOR position of a small
-    symmetric lags array [-n_half … 0 … n_half] so that gaussian_filter1d
-    applies a fully symmetric kernel there — exactly as it does at the CCF
-    peak (also an interior position in the lags_eval array).
+    IMPORTANT: `eff_span` must be the *same* value used for the main CCF
+    numerator (`_nufft_cross_spectrum_at_lags`). If this scale used the raw
+    `span` while the numerator used a padded `eff_span`, the two would be
+    computed on different periodic domains and the fix above would not
+    actually remove the wrap-around bias -- it would just move it from the
+    numerator into an inconsistent numerator/denominator ratio instead.
+
+    The other critical detail: lag=0 is placed at an INTERIOR position of a
+    small symmetric lags array [-n_half … 0 … n_half] so that
+    gaussian_filter1d applies a fully symmetric kernel there — exactly as
+    it does at the CCF peak (also an interior position in the lags_eval
+    array).
 
     Without this, the Gaussian-smoothed cross-spectrum peak (interior,
     symmetric smoothing) was divided by an unsmoothed ACF scale, giving a
     systematic ~2-3% deficit in the CCF peak.
     """
     xc = x_std.astype(np.complex128)
-    t_norm = (t - t_min) / span * (2 * np.pi)
+    t_norm = padded_angular_map(t, t_min, span, eff_span)
     f1 = finufft.nufft1d1(t_norm, xc, (N1,), eps=eps)
     acf_pow = (np.abs(f1) ** 2).astype(np.complex128)
 
@@ -82,7 +96,7 @@ def _acf_scale_at_lag0(t, x_std, t_min, span, N1, eps, bin_width, kernel):
     lags_sym = np.arange(-n_half, n_half + 1, dtype=float)
     mid = n_half
 
-    lags_sym_norm = lags_sym / span * (2 * np.pi)
+    lags_sym_norm = lags_sym / eff_span * (2 * np.pi)
     c_raw_sym = finufft.nufft1d2(lags_sym_norm, acf_pow, eps=eps).real
 
     if kernel == "gaussian":
@@ -131,20 +145,40 @@ def compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e-
 
     lags_eval = np.concatenate(([0.0], lags))
 
-    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_eval, N1, eps)
+    # `gaussian_filter1d` smooths along ARRAY INDEX, not physical lag value.
+    # `lags_eval` prepends 0.0 in front of `lags` as given by the caller --
+    # if `lags[0]` is not itself close to 0 (e.g. `lags` starts at a large
+    # negative value), array-adjacent entries can be physically very far
+    # apart, and the smoothing kernel incorrectly blends them (observed:
+    # the huge lag=0 spectrum value leaking into a neighboring lag with
+    # very few real pairs, off by >10x). Sorting by physical lag value
+    # before smoothing, then inverting the permutation afterwards, makes
+    # array-adjacency match physical-adjacency regardless of the order
+    # `lags` was supplied in.
+    order = np.argsort(lags_eval, kind="stable")
+    inv_order = np.argsort(order)
+    lags_sorted = lags_eval[order]
+
+    t_min, span = _common_time_norm(t, s)
+    eff_span = effective_span(span, lags_sorted)
+
+    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_sorted, eff_span, N1, eps)
     c_sm = gaussian_filter1d(c_raw, sigma=bin_width)
 
-    b_cross = compute_b_gaussian_cross(t, s, lags_eval, bin_width)
+    b_cross = compute_b_gaussian_cross(t, s, lags_sorted, bin_width)
     with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
         c_norm = c_sm / b_cross
 
-    t_min, span = _common_time_norm(t, s)
+    # back to the order of lags_eval == [0.0] + lags
+    c_norm = c_norm[inv_order]
+    b_cross = b_cross[inv_order]
+
     N1_val = 32 * max(len(x), len(y)) if N1 is None else N1
     scale_x = _acf_scale_at_lag0(
-        t, x_std, t_min, span, N1_val, eps, bin_width, "gaussian"
+        t, x_std, t_min, span, eff_span, N1_val, eps, bin_width, "gaussian"
     )
     scale_y = _acf_scale_at_lag0(
-        s, y_std, t_min, span, N1_val, eps, bin_width, "gaussian"
+        s, y_std, t_min, span, eff_span, N1_val, eps, bin_width, "gaussian"
     )
     scale = np.sqrt(scale_x * scale_y)
 
@@ -176,21 +210,36 @@ def compute_ccf_rectangle_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e
 
     lags_eval = np.concatenate(([0.0], lags))
 
-    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_eval, N1, eps)
+    # See the identical comment in compute_ccf_gaussian_nufft: sort by
+    # physical lag before smoothing (array-index-based) and unsort after,
+    # so array-adjacency matches physical-adjacency regardless of the
+    # order `lags` was supplied in. With bin_width=0.5 on unit spacing this
+    # is a no-op (kernel_size=1), but for larger bin_width the rectangle
+    # kernel smooths too and is equally exposed.
+    order = np.argsort(lags_eval, kind="stable")
+    inv_order = np.argsort(order)
+    lags_sorted = lags_eval[order]
+
+    t_min, span = _common_time_norm(t, s)
+    eff_span = effective_span(span, lags_sorted)
+
+    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_sorted, eff_span, N1, eps)
     kernel_size = max(1, round(2 * bin_width))
     c_sm = uniform_filter1d(c_raw, size=kernel_size)
 
-    b_cross = compute_b_rectangle_cross(t, s, lags_eval, bin_width)
+    b_cross = compute_b_rectangle_cross(t, s, lags_sorted, bin_width)
     with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
         c_norm = c_sm / b_cross
 
-    t_min, span = _common_time_norm(t, s)
+    c_norm = c_norm[inv_order]
+    b_cross = b_cross[inv_order]
+
     N1_val = 32 * max(len(x), len(y)) if N1 is None else N1
     scale_x = _acf_scale_at_lag0(
-        t, x_std, t_min, span, N1_val, eps, bin_width, "rectangle"
+        t, x_std, t_min, span, eff_span, N1_val, eps, bin_width, "rectangle"
     )
     scale_y = _acf_scale_at_lag0(
-        s, y_std, t_min, span, N1_val, eps, bin_width, "rectangle"
+        s, y_std, t_min, span, eff_span, N1_val, eps, bin_width, "rectangle"
     )
     scale = np.sqrt(scale_x * scale_y)
 
