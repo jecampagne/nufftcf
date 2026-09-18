@@ -162,7 +162,19 @@ def compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e-
     t_min, span = _common_time_norm(t, s)
     eff_span = effective_span(span, lags_sorted)
 
-    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_sorted, eff_span, N1, eps)
+    # N1 (NUFFT frequency-grid size) sets the angular resolution of the
+    # periodic domain. Padding the domain to eff_span (see utils.py)
+    # compresses the real data into a narrower arc of that domain, which
+    # -- at a FIXED N1 -- reduces the resolution available per unit
+    # PHYSICAL time. Scaling N1 by eff_span/span keeps that resolution
+    # roughly constant. NOTE this does not fully eliminate the pre-existing
+    # sensitivity of this estimator to N1 (see CHANGELOG): it only offsets
+    # the *additional* resolution loss introduced by the padding margin
+    # itself, on top of whatever precision the un-padded estimator already
+    # had at N1=32*n.
+    N1_val = int(round(32 * max(len(x), len(y)) * eff_span / span)) if N1 is None else N1
+
+    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_sorted, eff_span, N1_val, eps)
     c_sm = gaussian_filter1d(c_raw, sigma=bin_width)
 
     b_cross = compute_b_gaussian_cross(t, s, lags_sorted, bin_width)
@@ -173,7 +185,6 @@ def compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e-
     c_norm = c_norm[inv_order]
     b_cross = b_cross[inv_order]
 
-    N1_val = 32 * max(len(x), len(y)) if N1 is None else N1
     scale_x = _acf_scale_at_lag0(
         t, x_std, t_min, span, eff_span, N1_val, eps, bin_width, "gaussian"
     )
@@ -223,7 +234,10 @@ def compute_ccf_rectangle_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e
     t_min, span = _common_time_norm(t, s)
     eff_span = effective_span(span, lags_sorted)
 
-    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_sorted, eff_span, N1, eps)
+    # See the identical comment in compute_ccf_gaussian_nufft.
+    N1_val = int(round(32 * max(len(x), len(y)) * eff_span / span)) if N1 is None else N1
+
+    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_sorted, eff_span, N1_val, eps)
     kernel_size = max(1, round(2 * bin_width))
     c_sm = uniform_filter1d(c_raw, size=kernel_size)
 
@@ -234,7 +248,6 @@ def compute_ccf_rectangle_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e
     c_norm = c_norm[inv_order]
     b_cross = b_cross[inv_order]
 
-    N1_val = 32 * max(len(x), len(y)) if N1 is None else N1
     scale_x = _acf_scale_at_lag0(
         t, x_std, t_min, span, eff_span, N1_val, eps, bin_width, "rectangle"
     )
