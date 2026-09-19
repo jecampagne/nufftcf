@@ -5,6 +5,125 @@ All notable changes to `nufftcf` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-09-19
+
+### Fixed — periodic wrap-around in `*_nufft` estimators (CCF and ACF)
+
+`compute_ccf_rectangle_nufft`, `compute_ccf_gaussian_nufft`,
+`compute_acf_rectangle_nufft`, and `compute_acf_gaussian_nufft` mapped the
+data's time axis onto the full NUFFT periodic domain `[0, 2*pi)`, of period
+exactly equal to the observed data span (`t.max() - t.min()`). Requested
+lags live *inside* that same period, not in a padding margin beyond it
+(unlike `compute_ccf_*_fft`, which zero-pads to `n1+n2-1` samples before
+its FFT round-trip specifically to avoid this).
+
+As a result, a requested lag approaching the data span aliased with real
+data from the *other* end of the record: the estimate could leave the
+Pearson-valid range `[-1, 1]` entirely, and diverge from the `_fft`/
+`_realspace` reference by an order of magnitude or more as `|lag|`
+approached the span. The bug was invisible in the regime validated by the
+existing notebooks (`lag_max` a few % of the span), which is why it went
+unnoticed until now.
+
+**Fix**: the NUFFT periodic domain is now padded to
+`eff_span = span + 2*max(|lags|)` (mirroring the `n1+n2-1` margin `_fft`
+already used), and the real data is mapped onto a centered sub-arc of the
+circle instead of the whole circle. No fictitious zero-valued sample is
+added — a NUFFT type-1 transform already treats "no point placed here" as
+a zero contribution, exactly like a genuine zero-padding sample would.
+New helpers: `utils.effective_span`, `utils.padded_angular_map`.
+
+### Fixed — array-index vs. physical-lag smoothing order (CCF and ACF)
+
+A second, independent, pre-existing bug was found while writing regression
+tests for the fix above (confirmed present before it too, so it is not a
+regression introduced by the padding fix). All four `*_nufft` estimators
+build `lags_eval = [0.0] + lags` before smoothing. `gaussian_filter1d` /
+`uniform_filter1d` smooth along **array index**, not physical lag value —
+so whenever `lags[0]` was not itself close to `0` (e.g. `lags` starting at
+a large negative value, or any lag array where 0 falls near an edge rather
+than being embedded in it), the huge lag=0 spectrum value leaked into
+whatever lag happened to be array-adjacent to it, contaminating an
+estimate that could otherwise have very few real sample pairs behind it.
+
+**Fix**: `lags_eval` is now sorted by physical value before smoothing, and
+the result is un-sorted back to the caller's order afterwards, so
+array-adjacency always matches physical-adjacency regardless of the order
+`lags` was supplied in.
+
+### Changed — `N1` (NUFFT frequency-grid size) default
+
+Padding the periodic domain to `eff_span` (see above) compresses the real
+data into a narrower arc of that domain, which — at a fixed `N1` — reduces
+the NUFFT resolution available per unit of *physical* time, even at lags
+far from the domain edge. The default `N1` (previously `32 * n`,
+unconditionally) is now scaled by `eff_span / span` to compensate.
+
+This does not fully restore the estimator's baseline precision (see
+"Known follow-up" below) — it specifically offsets the *additional*
+resolution loss introduced by the padding margin itself. This also
+consolidates two previously-duplicated `N1`-default computations (the main
+NUFFT round-trip and the CCF's `_acf_scale_at_lag0` helper independently
+computed the same default; they were coincidentally always identical
+before this change and are now computed once and shared).
+
+### ⚠️ Numerical behavior change
+
+Because of the three changes above, values returned by `compute_ccf_*_nufft`
+and `compute_acf_*_nufft` can shift by `O(10⁻³ – 10⁻²)` relative to
+`v0.1.x`, **even for lags well within the previously-documented "safe"
+range** (`lag_max` a few % of the span). This is expected: the old values
+included a small, unpredictable-in-sign bias from the wrap-around bug that
+partially masked a separate, pre-existing `N1`-resolution limitation; the
+new values no longer have that bias.
+
+Validated on `notebook/nufftcf_ccf_demo.ipynb`'s `rho` sweep (5 values ×
+2 kernels): the maximum deviation from the exact `realspace` reference
+across the sweep went from `+0.016` (`v0.1.x`) to `±0.007` (this release)
+— i.e. the new values are, on average, *closer* to ground truth than
+before, not just differently biased. `pip install -e ".[benchmark]"` +
+`benchmark/` results confirm no performance regression at realistic
+dataset sizes (see "Performance" below).
+
+If you have saved reference outputs from `compute_ccf_*_nufft` /
+`compute_acf_*_nufft` (e.g. regression tests in downstream projects, or
+published results), expect to regenerate them against this release.
+`compute_ccf_*_fft`, `compute_acf_*_fft`, and the `*_realspace` estimators
+are entirely unaffected (unchanged code paths, unchanged outputs).
+
+### Added
+
+- `tests/test_nufft_padding.py`: 11 new regression tests covering both
+  fixes above, on a regular-grid case (compared against the exact
+  `compute_ccf_rectangle_fft` / `compute_acf_rectangle_fft` reference over
+  the *full* valid lag range, `|lag|` up to `n-1`) and an irregular-grid
+  case (compared against `compute_ccf_*_realspace` / `compute_acf_*_realspace`
+  up to `lag/span ≈ 0.9`).
+
+### Performance
+
+`N1` scaling by `eff_span/span` only matters when `lag_max` is a
+significant fraction of the span. Benchmarked (`benchmark/`, plus an
+additional direct `main`-vs-this-release timing comparison):
+
+- Negligible impact (`~0.8×–1.1×`, within measurement noise) for
+  `lag_max ≪ span` — the regime the package targets and that the existing
+  benchmarks exercise.
+- Up to `~2–3×` slower in the worst case tested (`lag_max` comparable to
+  `span`, on a very short series), but the absolute added cost stays in
+  the low milliseconds.
+- The `O(n log n)` NUFFT advantage over Pastas' `O(n²)` (the package's
+  core value proposition) is unaffected: still ~60–280× faster than Pastas
+  on `benchmark/benchmark_acf.py` across the tested range.
+
+### Known follow-up (not fixed in this release)
+
+A separate, pre-existing NUFFT+gaussian-kernel approximation residual
+(~10–20% relative, on one tested strongly-gappy irregular Ornstein-
+Uhlenbeck configuration) remains near the true CCF/ACF peak on irregular
+sampling. It is present identically before and after both fixes above, and
+is unrelated to either — tracked separately, not addressed here.
+
 ## [0.1.4] - 2026-09-16
 - CITATION.cff, DOI Zenodo, README
 
@@ -54,6 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   time series, plus a fast FFT-based ACF path (`regular`, `rectangle`,
   `gaussian`) for regularly-sampled data.
 
+[0.2.0]: https://github.com/jecampagne/nufftcf/releases/tag/v0.2.0
 [0.1.4]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.4
 [0.1.2]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.2
 [0.1.1]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.1
