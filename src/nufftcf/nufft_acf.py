@@ -14,9 +14,16 @@ artifact-free reference, use the `realspace` module instead.
 
 `N1 = 32 * n` was empirically validated (against the exact real-space
 estimator) to bring the NUFFT result into close agreement for both gaussian
-and rectangle kernels; pushing higher  gives a marginal further
-improvement for gaussian on strongly periodic signals, at negligible extra
-cost.
+and rectangle kernels, when the requested lags stay small compared to the
+data span. Since the wrap-around fix (see CHANGELOG), the periodic domain
+is padded to `eff_span = span + 2*max(|lags|)` to avoid aliasing at large
+lags; by default `N1` is scaled by `eff_span / span` on top of the
+`32 * n` base to compensate for the resulting loss of resolution per unit
+of physical time. This scaling offsets the *additional* loss introduced by
+the padding margin itself -- it does not, by itself, close the pre-existing
+~1-3% relative bias noted above; pushing `N1` higher still gives a marginal
+further improvement for gaussian on strongly periodic signals, at
+negligible extra cost for typical dataset sizes.
 """
 
 import numpy as np
@@ -81,7 +88,13 @@ def compute_acf_gaussian_nufft(lags, t, x, bin_width=0.5, N1=None, eps=1e-9):
     bin_width : float
         Gaussian kernel standard deviation (same units as `t`).
     N1 : int, optional
-        NUFFT frequency-grid size. Defaults to 32*len(x) in  _nufft_power_spectrum_at_lags
+        NUFFT frequency-grid size. Defaults to
+        ``32 * len(x) * eff_span / span`` (computed in
+        `_nufft_power_spectrum_at_lags`), where
+        ``eff_span = span + 2*max(|lags|)`` (see `utils.effective_span`).
+        The ``eff_span/span`` factor compensates for the padded periodic
+        domain used to avoid wrap-around (see CHANGELOG). Passing an
+        explicit ``N1`` bypasses both the base default and this scaling.
     eps : float
         NUFFT requested precision.
 

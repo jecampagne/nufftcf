@@ -58,7 +58,12 @@ def _nufft_cross_spectrum_at_lags(t, x, s, y, lags, eff_span, N1, eps):
     lags_norm = lags / eff_span * (2 * np.pi)
 
     if N1 is None:
-        N1 = 32 * max(len(x), len(y))
+        # Not reached via the public compute_ccf_*_nufft API (both wrappers
+        # always pass a concrete, eff_span-scaled N1_val) -- kept here only
+        # as a safe fallback for direct/internal use of this private
+        # function. Mirrors the public default: see
+        # compute_ccf_gaussian_nufft's docstring / CHANGELOG.
+        N1 = int(round(32 * max(len(x), len(y)) * eff_span / span))
 
     f1 = finufft.nufft1d1(t_norm, xc, (N1,), eps=eps)
     f2 = finufft.nufft1d1(s_norm, yc, (N1,), eps=eps)
@@ -124,7 +129,15 @@ def compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e-
                 (``s`` must be sorted ascending; may differ from ``t``).
     bin_width : float — Gaussian kernel standard deviation (same units as ``t``).
     N1        : int, optional — NUFFT frequency-grid size.
-                Defaults to ``32 * max(len(x), len(y))``.
+                Defaults to ``32 * max(len(x), len(y)) * eff_span / span``,
+                where ``eff_span = span + 2*max(|lags|)`` (see
+                ``utils.effective_span``) and ``span`` is the union range
+                of ``t`` and ``s``. The ``eff_span/span`` factor compensates
+                for the padded periodic domain used to avoid wrap-around
+                (see CHANGELOG): without it, a fixed ``32*n`` would resolve
+                the (now wider) periodic domain less finely per unit of
+                physical time. Passing an explicit ``N1`` bypasses both the
+                base default and this scaling.
     eps       : float — NUFFT requested precision.
 
     Returns

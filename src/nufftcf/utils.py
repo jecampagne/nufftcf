@@ -24,8 +24,7 @@ def effective_span(span: float, lags: np.ndarray) -> float:
     The NUFFT ACF/CCF estimators represent the data on a periodic domain
     of period `span` (union range of the input times). Without margin,
     a requested lag approaching `span` aliases with data from the *other*
-    end of the record -- the
-    exact analogue of computing an FFT-based correlation without the
+    end of the record -- the exact analogue of computing an FFT-based correlation without the
     zero-padding to length `n1+n2-1` that `scipy.signal.correlate(...,
     mode="full")` applies internally to get a *linear* (non-circular)
     result.
