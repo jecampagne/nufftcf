@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nufftcf"
-version = "0.1.4"
+version = "0.2.0"
 description = "Fast autocorrelation and cross-correlation functions estimation for irregularly- and regularly-sampled time series, via NUFFT + Numba-optimized real-space kernels (gaussian and rectangle)."
 readme = "README.md"
 requires-python = ">=3.11"

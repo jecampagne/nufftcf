@@ -76,39 +76,9 @@ for two independently-sampled series -- using it separately on `x` and `y`
 would silently misalign the lags. Build `t`/`s` from a shared reference date
 instead (see the example below).
 
-**⚠️ Known limitation: lags close to the total data span**
->
-> `compute_ccf_rectangle_nufft` and `compute_ccf_gaussian_nufft` are validated
-> (see `notebook/zdcf_vs_nufftcf.ipynb`, `notebook/pastas_vs_nufftcf*.ipynb`)
-> for lags that are small compared to the total time span of the data
-> (`t.max() - t.min()`), the typical regime for the targeted applications
-> (e.g. `lag_max` <~ 5% of the span in the validation notebooks).
->
-> Beyond that, a spurious periodic wrap-around can appear: the NUFFT
-> roundtrip (`_nufft_cross_spectrum_at_lags`) maps time onto a
-> `[0, 2*pi)` domain via `span = t.max() - t.min()`, which makes the
-> computation implicitly periodic with period `span`. As the requested lag
-> approaches this span, unphysical "edge" contributions contaminate the CCF
-> numerator, while the denominator `b` (pair count, linear/non-periodic)
-> does not account for them. The ratio can then fall outside the `[-1, 1]`
-> range expected for a Pearson CCF, and diverge markedly from
-> `compute_ccf_rectangle_fft` / `_realspace` (which remain correct over the
-> full range tested).
->
-> **This threshold is not a universal fraction**: it depends on the signal.
-> For a process with a decaying autocorrelation (Ornstein-Uhlenbeck-like,
-> see validation notebook), agreement with `_realspace` stays good up to
-> `lag/span ~ 0.3-0.4`. For a signal that is exactly periodic over the full
-> observation window (a particularly unfavorable case), the same comparison
-> already degrades beyond `lag/span ~ 0.05-0.08`.
->
-> **Recommendation**: if your data are on a regular grid, prefer
-> `compute_ccf_rectangle_fft` / `compute_ccf_gaussian_fft` (same results,
-> without this risk). Otherwise, check `lag_max` against
-> `compute_ccf_*_realspace` on a subset of your lags before trusting the
-> NUFFT version far from `lag=0`, especially if `lag_max` exceeds ~10-20%
-> of the total span of your data.
-
+For a worked comparison against **pyZDCF**, including a case with a known
+theoretical CCF, see
+[`notebook/nufftcf_ccf_demo.ipynb`](notebook/nufftcf_ccf_demo.ipynb).
 
 ## Documentation
 
@@ -260,7 +230,13 @@ c, b = compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5)
 
 The NUFFT-based estimators compute the power spectrum of the irregularly-sampled signal and invert it at the requested lags via the Wiener-Khinchin theorem. This implicitly relies on a finite-domain Fourier representation, which is mathematically equivalent to convolving the true spectrum with the "spectral window" induced by the irregular/gappy sampling pattern. A narrow spectral peak (a strongly periodic signal) is distorted much more visibly by this convolution than a broad, featureless spectrum (e.g. an AR(1)-type exponential decay), even though the absolute size of the distortion is similar in both cases.
 
-In practice, with the default `N1 = 32 * len(x)` (the number of Fourier modes used internally by FINUFFT), this residual bias is on the order of 1–3% of the ACF amplitude for strongly periodic signals with irregular or gappy sampling, and negligible for smoothly-decaying, broadband signals. Reducing N1 speeds up the computation slightly at the cost of a larger bias; increasing it beyond `32 * len(x)` gives diminishing returns for most practical series.
+In practice, with the default `N1` -- `32 * len(x)` (the number of Fourier modes used internally by FINUFFT), further multiplied by `eff_span / span` when the requested lags approach the data's time span (see [CHANGELOG](CHANGELOG.md#020---2026-09-19) for why) -- this residual bias is on the order of 1–3% of the ACF amplitude for strongly periodic signals with irregular or gappy sampling, and negligible for smoothly-decaying, broadband signals. Reducing N1 speeds up the computation slightly at the cost of a larger bias; increasing it beyond the default gives diminishing returns for most practical series.
+
+> As of v0.2.0, the `_nufft` estimators handle lags approaching the data's
+> time span correctly (a periodic wrap-around bug affecting that regime in
+> earlier versions was fixed -- see [CHANGELOG](CHANGELOG.md#020---2026-09-19)). If
+> you're on an earlier version and use lags that are more than a few
+> percent of your data's span, upgrade.
 
 The `_realspace` estimators do not have this limitation (no implicit
 periodicity assumption), at the cost of O(n) scaling per lag rather than
