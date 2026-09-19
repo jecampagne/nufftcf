@@ -54,6 +54,7 @@ BW = 0.5
 
 # ── Fixtures: the two datasets used throughout the original diagnosis ──────────
 
+
 def _regular_sine_dataset(seed=0, n=128, dt_shift_frac=0.2, noise=0.2):
     """Small, densely-sampled, EXACTLY periodic signal on a regular grid --
     empirically the most unfavorable case found for the wrap-around bug
@@ -87,6 +88,7 @@ def _irregular_ou_dataset(seed=123, n_days=3650, tau0=60, alpha=10.0, keep_frac=
 
 # ── Regular grid: NUFFT must track FFT (exact here) over the FULL lag range ────
 
+
 @pytest.mark.parametrize("kernel", ["rectangle", "gaussian"])
 def test_ccf_nufft_matches_fft_full_lag_range(kernel):
     """Previously: max|fft - nufft| ~ 35 (nufft values up to ~38, far
@@ -98,11 +100,16 @@ def test_ccf_nufft_matches_fft_full_lag_range(kernel):
 
     if kernel == "rectangle":
         c_fft, _ = compute_ccf_rectangle_fft(lags, ts, sig, ts, sig_noise, bin_width=BW)
-        c_nufft, _ = compute_ccf_rectangle_nufft(lags, ts, sig, ts, sig_noise, bin_width=BW)
+        c_nufft, _ = compute_ccf_rectangle_nufft(
+            lags, ts, sig, ts, sig_noise, bin_width=BW
+        )
     else:
         from nufftcf import compute_ccf_gaussian_fft
+
         c_fft, _ = compute_ccf_gaussian_fft(lags, ts, sig, ts, sig_noise, bin_width=BW)
-        c_nufft = compute_ccf_gaussian_nufft(lags, ts, sig, ts, sig_noise, bin_width=BW)[0]
+        c_nufft = compute_ccf_gaussian_nufft(
+            lags, ts, sig, ts, sig_noise, bin_width=BW
+        )[0]
 
     # NOTE: no hard [-1, 1] bound here -- the smoothed-kernel estimator can
     # itself slightly exceed 1 near a strong peak even in the `_fft`
@@ -126,6 +133,7 @@ def test_acf_nufft_matches_fft_full_lag_range(kernel):
         c_nufft, _ = compute_acf_rectangle_nufft(lags, ts, sig, bin_width=BW)
     else:
         from nufftcf import compute_acf_gaussian_fft
+
         c_fft, _ = compute_acf_gaussian_fft(lags, ts, sig, bin_width=BW)
         c_nufft, _ = compute_acf_gaussian_nufft(lags, ts, sig, bin_width=BW)
 
@@ -135,8 +143,9 @@ def test_acf_nufft_matches_fft_full_lag_range(kernel):
 
 # ── Irregular grid: NUFFT must track realspace (exact) up to lag/span ~ 0.9 ────
 
-_OU_LAGS = np.array([20, 60, 100, 200, 400, 700, 1000, 1400,
-                      1800, 2200, 2600, 3000, 3300], dtype=float)
+_OU_LAGS = np.array(
+    [20, 60, 100, 200, 400, 700, 1000, 1400, 1800, 2200, 2600, 3000, 3300], dtype=float
+)
 
 # Rectangle: tight tolerance, this is exactly what this branch fixes.
 # Gaussian: a separate, PRE-EXISTING NUFFT+gaussian-kernel approximation
@@ -158,13 +167,19 @@ def test_ccf_nufft_matches_realspace_large_lag_fraction(kernel):
     t_num, x, y, tau0 = _irregular_ou_dataset()
     span = t_num.max() - t_num.min()
     lags = _OU_LAGS
-    assert lags.max() / span > 0.85  # sanity: this test IS in the previously-broken regime
+    assert (
+        lags.max() / span > 0.85
+    )  # sanity: this test IS in the previously-broken regime
 
     if kernel == "rectangle":
-        c_real, _ = compute_ccf_rectangle_realspace(lags, t_num, x, t_num, y, bin_width=BW)
+        c_real, _ = compute_ccf_rectangle_realspace(
+            lags, t_num, x, t_num, y, bin_width=BW
+        )
         c_nufft, _ = compute_ccf_rectangle_nufft(lags, t_num, x, t_num, y, bin_width=BW)
     else:
-        c_real, _ = compute_ccf_gaussian_realspace(lags, t_num, x, t_num, y, bin_width=BW)
+        c_real, _ = compute_ccf_gaussian_realspace(
+            lags, t_num, x, t_num, y, bin_width=BW
+        )
         c_nufft, _ = compute_ccf_gaussian_nufft(lags, t_num, x, t_num, y, bin_width=BW)
 
     assert np.all(np.isfinite(c_nufft))
@@ -209,6 +224,7 @@ def test_acf_nufft_matches_realspace_large_lag_fraction(kernel):
 # un-padded code too). Fixed by sorting `lags_eval` by physical value
 # before smoothing and un-sorting after.
 
+
 @pytest.mark.parametrize("kernel", ["rectangle", "gaussian"])
 def test_ccf_nufft_lag0_does_not_leak_into_extreme_lag(kernel):
     """Regression test for the array-index/physical-lag smoothing bug,
@@ -222,11 +238,16 @@ def test_ccf_nufft_lag0_does_not_leak_into_extreme_lag(kernel):
 
     if kernel == "rectangle":
         c_fft, _ = compute_ccf_rectangle_fft(lags, ts, sig, ts, sig_noise, bin_width=bw)
-        c_nufft, _ = compute_ccf_rectangle_nufft(lags, ts, sig, ts, sig_noise, bin_width=bw)
+        c_nufft, _ = compute_ccf_rectangle_nufft(
+            lags, ts, sig, ts, sig_noise, bin_width=bw
+        )
     else:
         from nufftcf import compute_ccf_gaussian_fft
+
         c_fft, _ = compute_ccf_gaussian_fft(lags, ts, sig, ts, sig_noise, bin_width=bw)
-        c_nufft, _ = compute_ccf_gaussian_nufft(lags, ts, sig, ts, sig_noise, bin_width=bw)
+        c_nufft, _ = compute_ccf_gaussian_nufft(
+            lags, ts, sig, ts, sig_noise, bin_width=bw
+        )
 
     # index 0 (lag = -(n-1)) is the one directly adjacent, in lags_eval,
     # to the injected lag=0 -- exactly where the leak previously showed up.
@@ -242,6 +263,7 @@ def test_ccf_nufft_lag0_does_not_leak_into_extreme_lag(kernel):
 
 
 # ── Sanity: eff_span helper itself ──────────────────────────────────────────────
+
 
 def test_effective_span_helper():
     from nufftcf.utils import effective_span, padded_angular_map

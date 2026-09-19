@@ -185,9 +185,13 @@ def compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e-
     # the *additional* resolution loss introduced by the padding margin
     # itself, on top of whatever precision the un-padded estimator already
     # had at N1=32*n.
-    N1_val = int(round(32 * max(len(x), len(y)) * eff_span / span)) if N1 is None else N1
+    N1_val = (
+        int(round(32 * max(len(x), len(y)) * eff_span / span)) if N1 is None else N1
+    )
 
-    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_sorted, eff_span, N1_val, eps)
+    c_raw = _nufft_cross_spectrum_at_lags(
+        t, x_std, s, y_std, lags_sorted, eff_span, N1_val, eps
+    )
     c_sm = gaussian_filter1d(c_raw, sigma=bin_width)
 
     b_cross = compute_b_gaussian_cross(t, s, lags_sorted, bin_width)
@@ -248,9 +252,13 @@ def compute_ccf_rectangle_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e
     eff_span = effective_span(span, lags_sorted)
 
     # See the identical comment in compute_ccf_gaussian_nufft.
-    N1_val = int(round(32 * max(len(x), len(y)) * eff_span / span)) if N1 is None else N1
+    N1_val = (
+        int(round(32 * max(len(x), len(y)) * eff_span / span)) if N1 is None else N1
+    )
 
-    c_raw = _nufft_cross_spectrum_at_lags(t, x_std, s, y_std, lags_sorted, eff_span, N1_val, eps)
+    c_raw = _nufft_cross_spectrum_at_lags(
+        t, x_std, s, y_std, lags_sorted, eff_span, N1_val, eps
+    )
     kernel_size = max(1, round(2 * bin_width))
     c_sm = uniform_filter1d(c_raw, size=kernel_size)
 
