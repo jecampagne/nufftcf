@@ -5,6 +5,35 @@ All notable changes to `nufftcf` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] - 2026-09-20
+
+### Added
+
+- `nufftcf.default_N1(n_points, span, lags)`: given the same
+  `(n_points, span, lags)` a `compute_*_nufft` call will see, returns the
+  exact `N1` (NUFFT frequency-grid size) that call will use by default.
+  Since v0.2.0, that default depends on `lags` (through `eff_span`, see
+  [CHANGELOG](CHANGELOG.md#020---2026-09-19)) rather than being the fixed
+  `32 * n_points` it used to be, and there was previously no way to know
+  its value ahead of a call other than reimplementing the formula
+  yourself. Useful to log/report alongside results, or as a starting point
+  before passing a larger `N1` explicitly for extra precision.
+- `nufftcf.effective_span` is now also exported at the top level (it was
+  previously only reachable via `nufftcf.utils.effective_span`), alongside
+  the new `default_N1`.
+
+### Changed
+
+- Internal consolidation: the `N1 = 32 * n_points * eff_span / span`
+  formula was independently duplicated at four call sites across
+  `nufft_ccf.py` and `nufft_acf.py` (a leftover from how the v0.2.0 fixes
+  were added incrementally). All four now call the single
+  `utils.default_N1` helper described above -- no behavior change, just
+  removes the risk of the copies silently drifting apart in a future edit.
+
+No numerical behavior changes in this release: outputs are bit-for-bit
+identical to v0.2.0 for the same inputs.
+
 ## [0.2.0] - 2026-09-19
 
 ### Fixed — periodic wrap-around in `*_nufft` estimators (CCF and ACF)
@@ -173,6 +202,7 @@ is unrelated to either — tracked separately, not addressed here.
   time series, plus a fast FFT-based ACF path (`regular`, `rectangle`,
   `gaussian`) for regularly-sampled data.
 
+[0.2.1]: https://github.com/jecampagne/nufftcf/releases/tag/v0.2.1
 [0.2.0]: https://github.com/jecampagne/nufftcf/releases/tag/v0.2.0
 [0.1.4]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.4
 [0.1.2]: https://github.com/jecampagne/nufftcf/releases/tag/v0.1.2
