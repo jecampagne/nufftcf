@@ -269,6 +269,12 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
 
 ## Notebooks
 
+- [`scipy_vs_nufftcf_ccf.ipynb`](notebook/scipy_vs_nufftcf_ccf.ipynb) is aimed at
+users familiar with `scipy.signal.correlate`: it cross-correlates a sine wave
+with a noisy, time-shifted copy of itself, comparing `scipy` against `nufftcf`
+FFT and NUFFT estimators. Along the way it explains why the peak value can
+slightly exceed 1, and how to inspect the NUFFT precision parameter `N1` (whose default value
+already gives reasonable estimates) and tune it further if needed.
 - [`pastas_vs_nufftcf.ipynb`](notebook/pastas_vs_nufftcf.ipynb)
   compares **nufftcf** against **Pastas** on **irregularly**-sampled series
   (sine and AR(1)-like, with random gaps), using the `_nufft` estimators.
