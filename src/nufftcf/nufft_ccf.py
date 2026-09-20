@@ -22,7 +22,7 @@ import numpy as np
 import finufft
 from scipy.ndimage import gaussian_filter1d, uniform_filter1d
 
-from .utils import standardize, effective_span, padded_angular_map
+from .utils import standardize, effective_span, padded_angular_map, default_N1
 from .kernels import (
     compute_b_gaussian,
     compute_b_rectangle,
@@ -62,8 +62,9 @@ def _nufft_cross_spectrum_at_lags(t, x, s, y, lags, eff_span, N1, eps):
         # always pass a concrete, eff_span-scaled N1_val) -- kept here only
         # as a safe fallback for direct/internal use of this private
         # function. Mirrors the public default: see
-        # compute_ccf_gaussian_nufft's docstring / CHANGELOG.
-        N1 = int(round(32 * max(len(x), len(y)) * eff_span / span))
+        # compute_ccf_gaussian_nufft's docstring / CHANGELOG /
+        # `utils.default_N1`.
+        N1 = default_N1(max(len(x), len(y)), span, lags)
 
     f1 = finufft.nufft1d1(t_norm, xc, (N1,), eps=eps)
     f2 = finufft.nufft1d1(s_norm, yc, (N1,), eps=eps)
@@ -185,9 +186,7 @@ def compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e-
     # the *additional* resolution loss introduced by the padding margin
     # itself, on top of whatever precision the un-padded estimator already
     # had at N1=32*n.
-    N1_val = (
-        int(round(32 * max(len(x), len(y)) * eff_span / span)) if N1 is None else N1
-    )
+    N1_val = default_N1(max(len(x), len(y)), span, lags_sorted) if N1 is None else N1
 
     c_raw = _nufft_cross_spectrum_at_lags(
         t, x_std, s, y_std, lags_sorted, eff_span, N1_val, eps
@@ -252,9 +251,7 @@ def compute_ccf_rectangle_nufft(lags, t, x, s, y, bin_width=0.5, N1=None, eps=1e
     eff_span = effective_span(span, lags_sorted)
 
     # See the identical comment in compute_ccf_gaussian_nufft.
-    N1_val = (
-        int(round(32 * max(len(x), len(y)) * eff_span / span)) if N1 is None else N1
-    )
+    N1_val = default_N1(max(len(x), len(y)), span, lags_sorted) if N1 is None else N1
 
     c_raw = _nufft_cross_spectrum_at_lags(
         t, x_std, s, y_std, lags_sorted, eff_span, N1_val, eps

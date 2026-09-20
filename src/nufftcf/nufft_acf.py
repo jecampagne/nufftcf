@@ -31,7 +31,7 @@ import finufft
 from scipy.ndimage import gaussian_filter1d, uniform_filter1d
 
 from .kernels import compute_b_gaussian, compute_b_rectangle
-from .utils import standardize, effective_span, padded_angular_map
+from .utils import standardize, effective_span, padded_angular_map, default_N1
 
 
 def _nufft_power_spectrum_at_lags(t, x, lags, N1, eps):
@@ -62,12 +62,13 @@ def _nufft_power_spectrum_at_lags(t, x, lags, N1, eps):
     t_norm = padded_angular_map(t, t_min, span, eff_span)
     lags_norm = lags / eff_span * (2 * np.pi)
     if N1 is None:
-        # See the matching note in nufft_ccf.py: padding the periodic
-        # domain to eff_span compresses the real data into a narrower arc,
-        # reducing resolution per unit PHYSICAL time at fixed N1. Scale N1
-        # by eff_span/span to compensate for that additional loss (on top
-        # of whatever precision the base N1=32*n already had).
-        N1 = int(round(32 * n * eff_span / span))
+        # See the matching note in nufft_ccf.py / `utils.default_N1`:
+        # padding the periodic domain to eff_span compresses the real data
+        # into a narrower arc, reducing resolution per unit PHYSICAL time
+        # at fixed N1. Scale N1 by eff_span/span to compensate for that
+        # additional loss (on top of whatever precision the base N1=32*n
+        # already had).
+        N1 = default_N1(n, span, lags)
     f1 = finufft.nufft1d1(t_norm, xc, (N1,), eps=eps)
     mul = f1 * np.conj(f1)
     c_positive = finufft.nufft1d2(lags_norm, mul, eps=eps).real

@@ -57,3 +57,43 @@ def padded_angular_map(
     """
     theta_data = 2.0 * np.pi * span / eff_span
     return np.pi - theta_data / 2.0 + (vals - t_min) / span * theta_data
+
+
+def default_N1(n_points: int, span: float, lags: np.ndarray) -> int:
+    """The default NUFFT frequency-grid size used by every `compute_*_nufft`
+    estimator when `N1` is not explicitly passed.
+
+    ``32 * n_points`` is the empirically-validated base resolution (see
+    README); it is then scaled up by ``eff_span / span`` (see
+    `effective_span`) to compensate for the padded periodic domain used to
+    avoid wrap-around at large lags (CHANGELOG, v0.2.0) -- without this
+    scaling, padding the domain would silently reduce the NUFFT resolution
+    available per unit of *physical* time, even far from the domain edge.
+
+    Call this yourself, with the same ``lags`` you're about to request,
+    to know in advance what ``N1`` a `compute_*_nufft` call will use --
+    there is no other way to discover it, since it depends on ``lags``
+    (through ``eff_span``) and is not returned by the estimators. Useful
+    to log/report alongside results, or as a starting point before passing
+    a larger `N1` explicitly for extra precision.
+
+    Parameters
+    ----------
+    n_points : int
+        Number of samples in the (longer, for CCF) series -- i.e. what you
+        would pass as ``len(x)`` (ACF) or ``max(len(x), len(y))`` (CCF).
+    span : float
+        Time span of the data -- ``t.max() - t.min()`` for ACF, or the
+        union range of ``t`` and ``s`` for CCF (what
+        `effective_span`'s ``span`` argument expects).
+    lags : array_like
+        The lags you intend to request (same array you'll pass to the
+        `compute_*_nufft` call).
+
+    Examples
+    --------
+    >>> span = t.max() - t.min()
+    >>> default_N1(len(x), span, lags)
+    """
+    eff_span = effective_span(span, lags)
+    return int(round(32 * n_points * eff_span / span))

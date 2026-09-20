@@ -283,3 +283,33 @@ def test_effective_span_helper():
     assert mapped.max() < 2 * np.pi
     # and, with padding, they must NOT cover the full circle
     assert (mapped.max() - mapped.min()) < 2 * np.pi - 1e-9
+
+
+def test_default_N1_predicts_actual_default():
+    """`default_N1` exists specifically so users can know, ahead of a call,
+    what N1 a `compute_*_nufft` estimator will use (it depends on `lags`
+    through `eff_span`, so it's not a fixed constant -- see CHANGELOG /
+    README). Check the contract: calling it with the exact same
+    (n_points, span, lags) a `compute_ccf_rectangle_nufft` call would see,
+    then passing the result back in as an explicit N1, must reproduce the
+    default-N1 output bit-for-bit."""
+    from nufftcf.utils import default_N1
+
+    ts, sig, sig_noise, _ = _regular_sine_dataset()
+    lags = np.arange(-127.0, 128.0)
+    span = ts.max() - ts.min()
+
+    n1_predicted = default_N1(len(sig), span, lags)
+    assert n1_predicted > 32 * len(sig)  # padding did scale it up here
+
+    c_default, _ = compute_ccf_rectangle_nufft(
+        lags, ts, sig, ts, sig_noise, bin_width=BW
+    )
+    c_explicit, _ = compute_ccf_rectangle_nufft(
+        lags, ts, sig, ts, sig_noise, bin_width=BW, N1=n1_predicted
+    )
+    assert np.array_equal(c_default, c_explicit)
+
+    # with lag_max=0 (no padding needed, eff_span == span exactly), it
+    # reduces to the plain 32*n base
+    assert default_N1(len(sig), span, np.array([0.0])) == 32 * len(sig)

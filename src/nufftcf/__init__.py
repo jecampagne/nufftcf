@@ -52,7 +52,7 @@ from .fft_ccf import (
     compute_ccf_rectangle_fft,
     compute_ccf_gaussian_fft,
 )
-from .utils import t_numeric_of, standardize
+from .utils import t_numeric_of, standardize, effective_span, default_N1
 
 from importlib import metadata as _metadata
 
@@ -85,4 +85,6 @@ __all__ = [
     "compute_c_rectangle_cross",
     "t_numeric_of",
     "standardize",
+    "effective_span",
+    "default_N1",
 ]
