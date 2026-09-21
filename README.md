@@ -162,11 +162,11 @@ from nufftcf import compute_acf_gaussian_nufft, t_numeric_of
 idx = pd.date_range("2000-01-01", periods=5000, freq="D")[np.random.rand(5000) > 0.2]
 x = pd.Series(np.random.randn(len(idx)), index=idx)
 
-lags = np.arange(1.0, 366.0)         # 1 to 365 days
+lags = np.arange(0.0, 366.0)         # 0 to 365 days
 t = t_numeric_of(x)                   # elapsed days since first sample
 
 c, b = compute_acf_gaussian_nufft(lags, t, x.to_numpy(), bin_width=0.5)
-# c: ACF estimate per lag (c ~ 1 at lag -> 0)
+# c: ACF estimate per lag (c -> 1 at lag -> 0)
 # b: effective number of contributing pairs per lag (useful to flag
 #    under-sampled lags, e.g. mask out lags where b is too small)
 ```
@@ -221,7 +221,7 @@ c, b = compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5)
 - **Strongly periodic, irregularly-sampled signals** (e.g. seasonal/annual
   cycles) where you need the most accurate possible ACF and series length is
   manageable: use the `_realspace` variants, or the `_nufft` variants with an
-  increased `N1` (e.g. `N1>32*len(x)`), which reduces but does not fully
+  increased `N1`, which reduces but does not fully
   eliminate the residual bias (see below).
 - **Everything else, irregular case**: either `_nufft` or `_realspace` works;
   `_nufft` will generally be faster.
