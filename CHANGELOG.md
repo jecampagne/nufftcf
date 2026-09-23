@@ -5,11 +5,11 @@ All notable changes to `nufftcf` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.2] - 2026-09-23
 
-### Fixed — misleading $O(n\log n)$ complexity claims for the `_nufft` estimators (docs only)
+### Fixed — Complexity revisited (docs only)
 
-The README's scaling table and "Method" section stated the `_nufft`
+The README's scaling tables and "Method" section metionned the `_nufft`
 estimator family (`compute_acf_gaussian_nufft`, `compute_acf_rectangle_nufft`,
 `compute_ccf_gaussian_nufft`, `compute_ccf_rectangle_nufft`) scales as
 $O(n\log n)$. That is true of the FINUFFT type-1/type-2 calls alone, but
@@ -29,13 +29,29 @@ dominates (~100%) for the **Gaussian** kernel (whose two-pointer inner
 loop evaluates `exp()` per point in the window) and is comparable to the
 NUFFT term (~45%/55% split at $n\sim2.6\times10^5$) for the **rectangle**
 kernel (whose inner loop is a plain pointer/cumulative-sum lookup, no
-`exp()`), on regularly-sampled data. See the updated tables and Method
-section in [README.md](README.md) for the corrected, footnoted claims,
-and the discussion around lines 240-270 for the `_realspace`-vs-`_nufft`
-comparison, similarly corrected (the two families share the *same*
-$O(nK)$ pair-count denominator; `_nufft` only saves the numerator's
-$O(nK)$ term, which mattered more for the Gaussian kernel than for the
-rectangle one).
+`exp()`), on regularly-sampled data.
+
+Rather than replace one imprecise Big-O label with another equally
+elaborate one, the README's scaling tables were simplified: the `_nufft`
+and `_realspace` rows now both read $O(nK)$ for $K$ requested lags (their
+practically-observed scaling, see above -- previously $O(n\log n)$ for
+`_nufft` and "$O(n)$ per lag" for `_realspace`, two different-looking
+labels for what turns out to be the same scaling), the table footnotes
+explaining the two-term breakdown were removed, and the surrounding prose
+(the "Method" section) was shortened to a couple of sentences pointing to
+`benchmark/` for the measured numbers, instead of re-deriving the
+complexity inline.
+
+Since `_nufft` and `_realspace` now carry the same $O(nK)$ label, the
+`_realspace`-vs-`_nufft` comparison was rewritten to answer the obvious
+follow-up question -- what's the point of NUFFT, then? So a new "Practical takeaways" section right after the ACF/CCF tables
+now states both results plainly: `nufftcf` (either family) always beats
+Pastas/pyZDCF regardless of $K$; between `_nufft` and `_realspace`, the
+winner depends on $K$ against a roughly $n$-independent, kernel-specific
+threshold $K^*$ (~60-70 Gaussian, ~300-400 rectangle) -- and since
+[Rehfeld et al. (2011)](https://doi.org/10.5194/npg-18-389-2011)
+recommend the Gaussian kernel as the more robust choice on statistical
+grounds, that's also the kernel with the lower, easier-to-clear $K^*$.
 
 **No code or numerical behavior changes** -- this release only corrects
 comments and documentation (README.md) and the two benchmark-fitting

@@ -17,10 +17,9 @@
 Fast **autocorrelation** (ACF) and **cross-correlation** (CCF) function estimation
 for **irregularly- and regularly-sampled** time series, thanks notably to the
 **Nonuniform Fast Fourier Transform** library developped by the Flatiron
-Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)). See the
-tables below and the [Method](#method) section for the exact scaling of each
-estimator family -- it is not uniformly $O(n\log n)$ (see the
-`_nufft`-family footnote).
+Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)). 
+
+**nufftcf** Fourier-based methods are much faster than the O($n^2$) complexity of direct methods. See `benchmark/` for measured scaling of each estimator family -- the tables below give a rough guide only.
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
@@ -28,33 +27,15 @@ With **`nufftcf`** three estimator families are provided for the ACF:
 
 | Function | Sampling | Method | Scaling | Notes |
 |---|---|---|---|---|
-| `compute_acf_gaussian_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)^\dagger$ | fastest for long irregular series; ~1-3% residual amplitude bias on strongly periodic signals (see below) |
-| `compute_acf_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)^\dagger$ | same caveat as above |
-| `compute_acf_gaussian_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
-| `compute_acf_rectangle_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
+| `compute_acf_gaussian_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(nK)$ | fastest for long series with many lags(i.e. $K\gtrsim$ hundreds); ~1-3% residual amplitude bias on strongly periodic signals (see below) |
+| `compute_acf_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(nK)$ | same caveat as above |
+| `compute_acf_gaussian_realspace` | irregular or regular | direct real-space weighted sum | $O(nK)$ | artifact-free reference; faster than `_nufft` for a handful of lags (see below) |
+| `compute_acf_rectangle_realspace` | irregular or regular | direct real-space weighted sum | $O(nK)$ | artifact-free reference; faster than `_nufft` for a handful of lags (see below) |
 | `compute_acf_regular_fft` | **regular only** | classic FFT correlation, no kernel | $\sim~O(n)$ | matches Pastas `bin_method="regular"` to numerical precision |
-| `compute_acf_rectangle_fft` | **regular only** | classic FFT correlation + box filter | $\sim~O(n\log n)$ | faster than `_nufft`/`_realspace` on regular data (no NUFFT/numba overhead) |
-| `compute_acf_gaussian_fft` | **regular only** | classic FFT correlation + gaussian filter |$\sim~O(n\log n)$ | same |
+| `compute_acf_rectangle_fft` | **regular only** | classic FFT correlation + box filter | $\sim~O(n\log n)$, independent of $K$ | faster than `_nufft`/`_realspace` on regular data (no NUFFT/numba overhead) |
+| `compute_acf_gaussian_fft` | **regular only** | classic FFT correlation + gaussian filter |$\sim~O(n\log n)$, independent of $K$ | same |
 
-$^\dagger$ *at a fixed number of lags $K$.* The NUFFT type-1/type-2 calls
-alone scale as $O(n\log n)$, but the per-lag kernel/pair-count
-normalization (`kernels.py`'s two-pointer scan) adds $O(nK)$ on top, and
-the two terms are hard to tell apart from timings alone unless they are
-fit jointly (`n` and `n\log n` are nearly collinear over 1-2 decades of
-`n` at fixed `K`; see `benchmark/fit_benchmark_acf*.py`, which now fits
-`a_lin*n + a_nlogn*n*ln(n) + overhead` rather than assuming either term is
-zero). Empirically, on this repo's benchmarks (`K=366` fixed lags): the
-pair-count term dominates (~100%) for the **Gaussian** kernel, whose
-two-pointer inner loop evaluates `exp()` for every point inside the
-window; for the **rectangle** kernel, whose inner loop is a plain pointer
-difference (no `exp()`), the pair-count term is cheap enough that the
-`n log n` NUFFT term becomes comparable (~45%/55% split at `n~2.6e5` on
-regular data, see `benchmark/*_fit_summary.csv`). For a fixed problem, `K`
-does not grow with `n`, so the crossover where `n log n` would overtake
-`nK` sits at `n ~ exp(K)` -- astronomically large for any realistic `K`,
-i.e. irrelevant in practice.
-
-All seven ACF functions share the same calling convention:
+$K$ is the number of requested lags. All seven ACF functions share the same calling convention:
 `fn(lags, t, x, bin_width=0.5)` (`compute_acf_regular_fft` has no
 `bin_width`, since it applies no smoothing kernel), and return `(c, b)` --
 the ACF estimate and the effective pair count, both shape `(len(lags),)`.
@@ -68,18 +49,14 @@ sampling times:
 
 | Function | Sampling | Method | Scaling | Notes |
 |---|---|---|---|---|
-| `compute_ccf_gaussian_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)^\dagger$ | fastest for long irregular series; same residual-bias caveat as the ACF `_nufft` variants |
-| `compute_ccf_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)^\dagger$ | same caveat as above |
-| `compute_ccf_gaussian_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
-| `compute_ccf_rectangle_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
-| `compute_ccf_rectangle_fft` | **regular, same dt/lattice only** | classic FFT cross-correlation + box filter | $\sim~O(n\log n)$ | faster than `_nufft`/`_realspace` when both series share a sampling grid (no NUFFT/numba overhead) |
-| `compute_ccf_gaussian_fft` | **regular, same dt/lattice only** | classic FFT cross-correlation + gaussian filter | $\sim~O(n\log n)$ | same |
+| `compute_ccf_gaussian_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(nK)$ | fastest for long series with many lags (i.e. $K\gtrsim$ hundreds); same residual-bias caveat as the ACF `_nufft` variants |
+| `compute_ccf_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(nK)$ | same caveat as above |
+| `compute_ccf_gaussian_realspace` | irregular or regular | direct real-space weighted sum | $O(nK)$ | artifact-free reference; faster than `_nufft` for a handful of lags (see below) |
+| `compute_ccf_rectangle_realspace` | irregular or regular | direct real-space weighted sum | $O(nK)$ | artifact-free reference; faster than `_nufft` for a handful of lags (see below) |
+| `compute_ccf_rectangle_fft` | **regular, same dt/lattice only** | classic FFT cross-correlation + box filter | $\sim~O(n\log n)$, independent of $K$ | faster than `_nufft`/`_realspace` when both series share a sampling grid (no NUFFT/numba overhead) |
+| `compute_ccf_gaussian_fft` | **regular, same dt/lattice only** | classic FFT cross-correlation + gaussian filter | $\sim~O(n\log n)$, independent of $K$ | same |
 
-$^\dagger$ same caveat as the ACF `_nufft` footnote above: $O(n\log n)$ for
-the NUFFT calls, $+O(nK)$ for the pair-count normalization at a fixed
-number of lags $K$.
-
-All six share the calling convention `fn(lags, t, x, s, y, bin_width=0.5)`
+$K$ is the number of requested lags. All six share the calling convention `fn(lags, t, x, s, y, bin_width=0.5)`
 and return `(c, b)` -- the CCF estimate (Pearson-normalised, `c ~ 1` at
 perfect correlation) and the effective pair count, both shape `(len(lags),)`.
 By convention, a positive lag means `y` lags behind `x` (i.e. the CCF peaks
@@ -101,9 +78,25 @@ for two independently-sampled series -- using it separately on `x` and `y`
 would silently misalign the lags. Build `t`/`s` from a shared reference date
 instead (see the example below).
 
-For a worked comparison against **pyZDCF**, including a case with a known
-theoretical CCF, see
-[`notebook/nufftcf_ccf_demo.ipynb`](notebook/nufftcf_ccf_demo.ipynb).
+### Practical takeaways
+
+- **For any `n`**, both `nufftcf` families (`_nufft` *and* `_realspace`)
+  vastly outperform Pastas quadratic bin methods and pyZDCF -- e.g. at
+  `n=256,000`, Pastas takes ~55 min against ~10-20 s for `nufftcf`
+  (`benchmark/`, ~2 orders of magnitude against pyZDCF too, see
+  `notebook/zdcf_vs_nufftcf.ipynb`). This holds regardless of `K`
+  (number of requested lags), so it is encouraged to use `nufftcf`.
+- Between `_nufft` and `_realspace` themselves, the faster one is set by
+  `K`, not `n` (the crossover barely moves with `n`, see the [estimator
+  guide](#which-estimator-should-i-use)): `_nufft` wins once `K` exceeds
+  a kernel-dependent threshold $K^*$, empirically **~60-70 for the
+  Gaussian kernel, ~300-400 for rectangle**. Below $K^*$, `_realspace` is
+  competitive or faster; typical usage (seasonal/annual lag grids, tens
+  to hundreds of lags) is usually well above it.
+- [Rehfeld et al. (2011)](https://doi.org/10.5194/npg-18-389-2011) find
+  the Gaussian kernel to be "a reliable and more robust estimator" than
+  other kernels for irregularly-sampled correlation analysis -- and it
+  conveniently also has the *lower* $K^*$, so `_nufft` functions may be prefered.
 
 ## Documentation
 
@@ -248,8 +241,11 @@ c, b = compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5)
   manageable: use the `_realspace` variants, or the `_nufft` variants with an
   increased `N1`, which reduces but does not fully
   eliminate the residual bias (see below).
-- **Everything else, irregular case**: either `_nufft` or `_realspace` works;
-  `_nufft` will generally be faster.
+- **Everything else, irregular case**: either `_nufft` or `_realspace`
+  works; which is faster depends on how many lags `K` you request --
+  `_nufft` pulls ahead once $K$ reaches the hundreds/thousands,
+  `_realspace` is competitive or faster for a handful of lags (see
+  below).
 
 ### A note on the NUFFT residual bias
 
@@ -264,24 +260,7 @@ In practice, with the default `N1` -- `32 * len(x)` (the number of Fourier modes
 > percent of your data's span, upgrade.
 
 The `_realspace` estimators do not have this limitation (no implicit
-periodicity assumption), at the cost of an $O(n)$-per-lag direct sum for
-the correlation numerator (so $O(nK)$ overall for $K$ lags), on top of the
-*same* $O(nK)$ pair-count denominator `_nufft` already pays (`kernels.py`'s
-`compute_b_gaussian`/`compute_b_rectangle` -- identical function, same
-cost, in both families). `_nufft` gets its numerator essentially for free
-from the type-2 NUFFT evaluation ($O(n\log n)$ total, not per lag), so the
-real difference between the two families is one extra $O(nK)$ numerator
-term that `_realspace` pays and `_nufft` doesn't -- not a different
-scaling regime for the shared $O(nK)$ part. How much that extra term
-costs depends on the kernel: for **rectangle**, `compute_c_rectangle` uses
-a cumulative sum (`O(1)` per point, no `exp()`), so `_realspace` is about
-as fast as `_nufft` (sometimes faster, no NUFFT overhead); for
-**Gaussian**, `compute_c_gaussian` evaluates `exp()` for every point in
-the kernel window just like the `b` denominator does, so `_realspace`
-effectively pays that `exp()`-heavy inner loop twice where `_nufft` pays
-it once, and ends up noticeably slower (~1.5-2x in this repo's
-benchmarks). For most practical series lengths both are fast; benchmark
-on your own data if it matters (see `benchmark/`).
+periodicity assumption). 
 
 ### Regularly-sampled data: the `_fft` estimators
 
@@ -371,20 +350,17 @@ All are Colab-ready: the first cell installs **nufftcf** as well as **Pastas** o
 1. **[FINUFFT](https://github.com/flatironinstitute/finufft)** (Flatiron
    Institute) to evaluate the power spectrum of the irregularly-sampled
    signal via a type-1 non-uniform FFT, then invert it at the requested lags
-   via a type-2 NUFFT (Wiener-Khinchin theorem) -- this is what gives the
-   `_nufft` estimators the $O(n\ log\ n)$ part of their scaling, instead of
-   the $O(n^2)$ (all-pairs) or $O(nK)$ (naive per-lag direct sum) cost of
-   evaluating the numerator at $K$ lags directly.
+   via a type-2 NUFFT (Wiener-Khinchin theorem).
 2. An analytical, kernel-specific correction for the number of
    contributing sample pairs per lag (the `b` denominator in `kernels.py`),
    for both the **Gaussian** and **rectangular/boxcar** smoothing kernels --
    computed with an $O(n)$ two-pointer scan *per lag* (since `t` is sorted),
    rather than the naive $O(n^2)$ all-pairs count per lag. This `b` is what
    turns the raw NUFFT power spectrum into a properly normalized
-   correlation, but at $K$ fixed lags it costs $O(nK)$ overall -- for a
-   fixed `K` this is the term that actually dominates the wall-clock time
-   of `compute_*_nufft` in this repo's benchmarks (see the $^\dagger$
-   footnote on the ACF/CCF tables above), not the $O(n\log n)$ NUFFT calls.
+   correlation.
+
+See `benchmark/` for how each of these two ingredients contributes to the
+measured scaling of the `_nufft` estimators.
 
 On a **regular** grid, `fft_acf.py` gets the same `b` correction for free,
 without the two-pointer scan: smoothing the deterministic "raw pair count"
