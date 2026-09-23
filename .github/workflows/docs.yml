@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:              # redéployer seulement si la doc (ou ce qu'elle inclut) change
+      - "docs/**"
+      - "mkdocs.yml"
+      - "README.md"     # inclus dans le site via pymdownx.snippets
+      - "src/**"        # docstrings -> API Reference
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:    # déclenchement manuel possible
 
 # Allow only one concurrent deployment
 concurrency:
@@ -18,24 +25,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # full history (mkdocstrings needs it for git-dates plugin if added later)
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
 
-      - name: Install MkDocs + dependencies
+      # Une seule source de vérité pour les dépendances : l'extra [docs] de pyproject.toml.
+      # `-e .` installe aussi le paquet, nécessaire pour que mkdocstrings importe les docstrings.
+      - name: Install package + docs extras
         run: |
-          pip install \
-            mkdocs \
-            mkdocs-material \
-            mkdocstrings \
-            mkdocstrings-python \
-            mkdocs-autorefs
-
-      - name: Install package (needed for mkdocstrings to import and parse docstrings)
-        run: pip install -e .
+          pip install --upgrade pip
+          pip install -e ".[docs]"
 
       - name: Build and deploy to GitHub Pages
         run: mkdocs gh-deploy --force

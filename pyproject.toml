@@ -37,7 +37,7 @@ benchmark = ["pastas>=1.0", "matplotlib>=3.5", "tqdm"]
 test = ["pytest>=7.0"]
 dev = ["black>=24.0", "pytest>=7.0"]
 docs = [
-    "mkdocs>=1.5",
+    "mkdocs>=1.5,<2",
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",
     "pymdown-extensions>=10.0",

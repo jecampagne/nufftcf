@@ -1,9 +1,10 @@
+<!-- --8<-- [start:overview] -->
 # nufftcf
 
 [![Tests](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml/badge.svg)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
 [![Lint](https://github.com/jecampagne/nufftcf/actions/workflows/lint.yml/badge.svg)](https://github.com/jecampagne/nufftcf/actions/workflows/lint.yml)
 [![PyPI version](https://img.shields.io/pypi/v/nufftcf.svg)](https://pypi.org/project/nufftcf/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jecampagne/nufftcf/blob/main/LICENSE)
 
 
 [![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13%20|%203.14-blue)](https://github.com/jecampagne/nufftcf/actions/workflows/tests.yml)
@@ -21,7 +22,7 @@ Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)).
 
 **nufftcf** Fourier-based methods are much faster than the O($n^2$) complexity of direct methods. See `benchmark/` for measured scaling of each estimator family -- the tables below give a rough guide only.
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes.
+See [CHANGELOG.md](https://github.com/jecampagne/nufftcf/blob/main/CHANGELOG.md) for release notes.
 
 With **`nufftcf`** three estimator families are provided for the ACF:
 
@@ -88,7 +89,7 @@ instead (see the example below).
   (number of requested lags), so it is encouraged to use `nufftcf`.
 - Between `_nufft` and `_realspace` themselves, the faster one is set by
   `K`, not `n` (the crossover barely moves with `n`, see the [estimator
-  guide](#which-estimator-should-i-use)): `_nufft` wins once `K` exceeds
+  guide](https://jecampagne.github.io/nufftcf/usage/#which-estimator-should-i-use)): `_nufft` wins once `K` exceeds
   a kernel-dependent threshold $K^*$, empirically **~60-70 for the
   Gaussian kernel, ~300-400 for rectangle**. Below $K^*$, `_realspace` is
   competitive or faster; typical usage (seasonal/annual lag grids, tens
@@ -97,6 +98,8 @@ instead (see the example below).
   the Gaussian kernel to be "a reliable and more robust estimator" than
   other kernels for irregularly-sampled correlation analysis -- and it
   conveniently also has the *lower* $K^*$, so `_nufft` functions may be prefered.
+
+<!-- --8<-- [end:overview] -->
 
 ## Documentation
 
@@ -140,7 +143,7 @@ pip install --only-binary=:all: finufft numba llvmlite
 pip install nufftcf
 ```
 
-See [Troubleshooting](docs/installation.md#troubleshooting-macos) if you
+See [Troubleshooting](https://jecampagne.github.io/nufftcf/installation/#troubleshooting-macos) if you
 still hit a build error.
 
 ### From a local clone (for contributors / running notebooks and benchmarks)
@@ -168,6 +171,8 @@ cd nufftcf
 pytest tests/ -v
 ```
 Let me know via the [repository issues](https://github.com/jecampagne/nufftcf/issues) if you encounter any troubles.
+
+<!-- --8<-- [start:guide] -->
 
 ## Quick start
 
@@ -251,11 +256,11 @@ c, b = compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5)
 
 The NUFFT-based estimators compute the power spectrum of the irregularly-sampled signal and invert it at the requested lags via the Wiener-Khinchin theorem. This implicitly relies on a finite-domain Fourier representation, which is mathematically equivalent to convolving the true spectrum with the "spectral window" induced by the irregular/gappy sampling pattern. A narrow spectral peak (a strongly periodic signal) is distorted much more visibly by this convolution than a broad, featureless spectrum (e.g. an AR(1)-type exponential decay), even though the absolute size of the distortion is similar in both cases.
 
-In practice, with the default `N1` -- `32 * len(x)` (the number of Fourier modes used internally by FINUFFT), further multiplied by `eff_span / span` when the requested lags approach the data's time span (see [CHANGELOG](CHANGELOG.md#020---2026-09-19) for why) -- this residual bias is on the order of 1–3% of the ACF amplitude for strongly periodic signals with irregular or gappy sampling, and negligible for smoothly-decaying, broadband signals. Reducing N1 speeds up the computation slightly at the cost of a larger bias; increasing it beyond the default gives diminishing returns for most practical series.
+In practice, with the default `N1` -- `32 * len(x)` (the number of Fourier modes used internally by FINUFFT), further multiplied by `eff_span / span` when the requested lags approach the data's time span (see [CHANGELOG](https://github.com/jecampagne/nufftcf/blob/main/CHANGELOG.md#020---2026-09-19) for why) -- this residual bias is on the order of 1–3% of the ACF amplitude for strongly periodic signals with irregular or gappy sampling, and negligible for smoothly-decaying, broadband signals. Reducing N1 speeds up the computation slightly at the cost of a larger bias; increasing it beyond the default gives diminishing returns for most practical series.
 
 > As of v0.2.0, the `_nufft` estimators handle lags approaching the data's
 > time span correctly (a periodic wrap-around bug affecting that regime in
-> earlier versions was fixed -- see [CHANGELOG](CHANGELOG.md#020---2026-09-19)). If
+> earlier versions was fixed -- see [CHANGELOG](https://github.com/jecampagne/nufftcf/blob/main/CHANGELOG.md#020---2026-09-19)). If
 > you're on an earlier version and use lags that are more than a few
 > percent of your data's span, upgrade.
 
@@ -288,26 +293,26 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
 
 ## Notebooks
 
-- [`scipy_vs_nufftcf_ccf.ipynb`](notebook/scipy_vs_nufftcf_ccf.ipynb) is aimed at
+- [`scipy_vs_nufftcf_ccf.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/scipy_vs_nufftcf_ccf.ipynb) is aimed at
 users familiar with `scipy.signal.correlate`: it cross-correlates a sine wave
 with a noisy, time-shifted copy of itself, comparing `scipy` against `nufftcf`
 FFT and NUFFT estimators. Along the way it explains why the peak value can
 slightly exceed 1, and how to inspect the NUFFT precision parameter `N1` (whose default value
 already gives reasonable estimates) and tune it further if needed.
-- [`pastas_vs_nufftcf.ipynb`](notebook/pastas_vs_nufftcf.ipynb)
+- [`pastas_vs_nufftcf.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/pastas_vs_nufftcf.ipynb)
   compares **nufftcf** against **Pastas** on **irregularly**-sampled series
   (sine and AR(1)-like, with random gaps), using the `_nufft` estimators.
-- [`pastas_vs_nufftcf_regular.ipynb`](notebook/pastas_vs_nufftcf_regular.ipynb)
+- [`pastas_vs_nufftcf_regular.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/pastas_vs_nufftcf_regular.ipynb)
   does the same on **regularly**-sampled series (sine, noisy sine,
   noisy exponential decay, square wave), using the `_fft` estimators,
   for all 3 of Pastas' bin methods (`regular`/`rectangle`/`gaussian`).
-- [`zdcf_vs_nufftcf.ipynb`](notebook/zdcf_vs_nufftcf.ipynb) compares **nufftcf** against **pyzdcf** on the same **irregularly**-sampled series used in the `pastas_vs_nufftcf.ipynb`.
-- [`nufftcf_ccf_demo.ipynb`](notebook/nufftcf_ccf_demo.ipynb) demonstrates the
+- [`zdcf_vs_nufftcf.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/zdcf_vs_nufftcf.ipynb) compares **nufftcf** against **pyzdcf** on the same **irregularly**-sampled series used in the `pastas_vs_nufftcf.ipynb`.
+- [`nufftcf_ccf_demo.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_ccf_demo.ipynb) demonstrates the
   **cross-correlation (CCF)** functions (`compute_ccf_gaussian_nufft`,
   `compute_ccf_rectangle_nufft`) against **pyZDCF**, including a case with two
   series built from coupled Ornstein-Uhlenbeck processes for which the
   theoretical CCF is known analytically.
-- [`nufftcf_astro_demo.ipynb`](notebook/nufftcf_astro_demo.ipynb) is an
+- [`nufftcf_astro_demo.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_astro_demo.ipynb) is an
   **astrophysics-flavoured** use-case of the ACF estimators on
   a synthetic stellar light curve combining a quasi-periodic rotation signal
   (sinusoid of period `P_rot` with a slowly-evolving amplitude, modeling spot
@@ -324,7 +329,7 @@ already gives reasonable estimates) and tune it further if needed.
   and measurement-noise-dilution subtleties discussed in the notebook), and
   the recovery is validated over many independent survey realizations
   (Monte Carlo over seeds).
-- [`nufftcf_demo_ccf_Emmanoulopoulos.ipynb`](notebook/nufftcf_demo_ccf_Emmanoulopoulos.ipynb)
+- [`nufftcf_demo_ccf_Emmanoulopoulos.ipynb`](https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_demo_ccf_Emmanoulopoulos.ipynb)
   is a **cross-correlation, reverberation-mapping-flavoured** use-case of the
   CCF estimators on a synthetic pair of AGN/blazar-like light curves. A single
   latent series is drawn with the Emmanoulopoulos algorithm
@@ -419,9 +424,11 @@ If you use `nufftcf`, please also cite FINUFFT, which it depends on:
 [arXiv:2609.03866](https://arxiv.org/abs/2609.03866)   [PDF](https://arxiv.org/pdf/2609.03866)
 *Class: astro-ph.IM*: **nufftcf: Fast Auto- and Cross-Correlation Function Estimation for Irregularly-Sampled Time Series via the Non-Uniform FFT**
 
+<!-- --8<-- [end:guide] -->
+
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/jecampagne/nufftcf/blob/main/LICENSE)
 
 ## Development
 
