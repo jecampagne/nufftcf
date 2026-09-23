@@ -5,6 +5,49 @@ All notable changes to `nufftcf` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed — misleading $O(n\log n)$ complexity claims for the `_nufft` estimators (docs only)
+
+The README's scaling table and "Method" section stated the `_nufft`
+estimator family (`compute_acf_gaussian_nufft`, `compute_acf_rectangle_nufft`,
+`compute_ccf_gaussian_nufft`, `compute_ccf_rectangle_nufft`) scales as
+$O(n\log n)$. That is true of the FINUFFT type-1/type-2 calls alone, but
+`compute_*_nufft` also normalizes by the pair count returned by
+`kernels.py`'s two-pointer scan, which costs $O(n)$ **per lag** -- i.e.
+$O(nK)$ overall for $K$ requested lags, not accounted for by the
+$O(n\log n)$ label. For a fixed $K$ (the common case: a benchmark or a
+production pipeline evaluating the same lag grid across many series
+lengths), $n\log n$ and $nK$ are only weakly distinguishable over 1-2
+decades of $n$, and the crossover where $n\log n$ would overtake $nK$
+sits at $n \sim e^{K}$ -- unreachable for any realistic $K$.
+
+Refitting `benchmark/*_results_macosx.csv` with both terms free
+(`a_lin*n + a_nlogn*n*ln(n) + overhead`, both coefficients constrained
+$\geq 0$, see `benchmark/fit_benchmark_acf*.py`) shows the pair-count term
+dominates (~100%) for the **Gaussian** kernel (whose two-pointer inner
+loop evaluates `exp()` per point in the window) and is comparable to the
+NUFFT term (~45%/55% split at $n\sim2.6\times10^5$) for the **rectangle**
+kernel (whose inner loop is a plain pointer/cumulative-sum lookup, no
+`exp()`), on regularly-sampled data. See the updated tables and Method
+section in [README.md](README.md) for the corrected, footnoted claims,
+and the discussion around lines 240-270 for the `_realspace`-vs-`_nufft`
+comparison, similarly corrected (the two families share the *same*
+$O(nK)$ pair-count denominator; `_nufft` only saves the numerator's
+$O(nK)$ term, which mattered more for the Gaussian kernel than for the
+rectangle one).
+
+**No code or numerical behavior changes** -- this release only corrects
+comments and documentation (README.md) and the two benchmark-fitting
+scripts (`benchmark/fit_benchmark_acf.py`,
+`benchmark/fit_benchmark_acf_regular.py`), which now fit and report both
+terms instead of assuming the NUFFT term alone. Outputs of
+`compute_*_nufft`/`compute_*_fft`/`compute_*_realspace` are bit-for-bit
+identical to v0.2.1 for the same inputs. Benchmark CSVs
+(`benchmark/*_results*.csv`) are unchanged (real measurements, nothing to
+correct); only the derived `*_fit_summary.csv` and `*_fit.pdf` outputs
+differ, reflecting the corrected fit model.
+
 ## [0.2.1] - 2026-09-20
 
 ### Added
