@@ -10,8 +10,28 @@ expected scaling law:
     (empirically ~O(n): a fixed-size, O(window) np.corrcoef call per lag,
     NOT the O(n^2) slotting technique used by the other two bin methods --
     confirmed by direct timing before writing this script, not assumed.)
-  - nufftcf "fft" and "nufft"                : a * n*ln(n) + overhead
-    (both scale the same way; "fft" has a smaller `a`, see README)
+  - nufftcf "fft"                              : a * n*ln(n) + overhead
+    Genuinely O(n log n) and independent of K (the number of lags), unlike
+    "nufft" below: `fft_acf.py` applies its smoothing filter
+    (`gaussian_filter1d`/`uniform_filter1d`) ONCE to the whole raw
+    `scipy.signal.correlate` output (cost O(n log n) + O(n)), then simply
+    looks up each of the K requested lags in that filtered array (O(K),
+    not O(nK)). Confirmed both by inspecting `fft_acf.py` and by comparing
+    n*ln(n) against a pure-linear fit on this column: n*ln(n) is at least
+    as good almost everywhere and the "regular" row is unambiguous
+    (R^2=0.990 vs 0.983 for linear) -- the single-pass-filter design pays
+    off in the scaling, not just in the prefactor.
+  - nufftcf "nufft"       : a_lin * n  +  a_nlogn * n*ln(n)  + overhead
+    CHANGED (was a*n*ln(n)+overhead): even on a regular grid, "nufft"
+    calls the *same* `compute_*_nufft` estimator as the irregular-sampling
+    benchmark, which still normalizes via `kernels.py`'s two-pointer scan:
+    O(n) per lag, O(nK) overall for the K=366 lags fixed throughout this
+    benchmark. The dedicated regular-grid fast path ("fft" above) exists
+    precisely to avoid this cost. As in fit_benchmark_acf.py (irregular
+    data, same underlying estimator), the two terms are fit jointly under
+    a >=0 constraint rather than assuming either is exactly zero; see
+    that script's docstring for the full argument (crossover at
+    n ~ exp(K), not reached in any benchmark here).
 
 Same robust-fit / bootstrap machinery as fit_benchmark_acf.py (the
 irregular-sampling counterpart) -- see that script's docstring for the
@@ -62,18 +82,29 @@ def model_nlogn(n, a, ovh):
     return a * n * np.log(n) + ovh
 
 
-# Default model per algo ...
+def model_nufft_mixed(n, a_lin, a_nlogn, ovh):
+    """Two additive terms: pair-count O(n) [at fixed K] + NUFFT O(n log n).
+    See module docstring for why this replaces the plain n*ln(n) model for
+    the "nufft" algo (but NOT for "fft", which has no O(nK) term)."""
+    return a_lin * n + a_nlogn * n * np.log(n) + ovh
+
+
+# Default model per algo: (model_func, model_label, initial_guess_p0)
 ALGO_MODELS = {
-    "pastas": (model_quadratic, f"$a.n^2 + overhead$"),
-    "fft": (model_nlogn, f"$a.n.\ln(n) + overhead$"),
-    "nufft": (model_nlogn, f"$a.n.\ln(n) + overhead$"),
+    "pastas": (model_quadratic, r"$a.n^2 + ovh$", [1e-7, 0.01]),
+    "fft": (model_nlogn, r"$a.n.\ln(n) + ovh$", [1e-7, 0.001]),
+    "nufft": (
+        model_nufft_mixed,
+        r"$a_1.n + a_2.n.\ln(n) + ovh$",
+        [1e-7, 1e-9, 0.001],
+    ),  # was model_nlogn -- see module docstring
 }
 # ... overridden for the one case that scales differently: Pastas has no
 # smoothing kernel to apply in "regular" mode, just a fixed-size windowed
 # np.corrcoef per lag, so it doesn't pay the O(n^2) cost the slotting
 # technique incurs for "gaussian"/"rectangle".
 MODEL_OVERRIDE = {
-    ("regular", "pastas"): (model_linear, f"$a.n + overhead$"),
+    ("regular", "pastas"): (model_linear, r"$a.n + ovh$", [1e-7, 0.01]),
 }
 
 
@@ -82,16 +113,55 @@ def get_model(kernel, algo):
 
 
 # ============================================================
+# 1bis. Human-readable parameter labels + dominant-term diagnostic
+#       (nufft only -- see fit_benchmark_acf.py for the full rationale)
+# ============================================================
+def _param_names(model_func):
+    if model_func is model_nufft_mixed:
+        return ["a_1", "a_2", "ovh"]
+    return ["a", "ovh"]
+
+
+def format_params(model_func, params, param_err):
+    names = _param_names(model_func)
+    parts = []
+    for name, val, err in zip(names, params, param_err):
+        if name.startswith("ovh"):
+            parts.append(f"${name}$={val * 1000:.2f}\u00b1{err * 1000:.2f} ms")
+        else:
+            parts.append(f"${name}$={val:.2e}\u00b1{err:.1e}")
+    return "  ".join(parts)
+
+
+def dominant_term_note(model_func, params, n_max):
+    if model_func is not model_nufft_mixed:
+        return ""
+    a_lin, a_nlogn, _ = params
+    lin_part = a_lin * n_max
+    nlogn_part = a_nlogn * n_max * np.log(n_max)
+    total = lin_part + nlogn_part
+    if total <= 0:
+        return ""
+    frac_lin = lin_part / total
+    return (
+        f"  [at n={n_max:.0f}: linear term is {frac_lin:.1%} of the fitted "
+        f"nufft time, n*ln(n) term is {1 - frac_lin:.1%}]"
+    )
+
+
+# ============================================================
 # 2. Robust fit (soft_l1) -- identical to fit_benchmark_acf.py
 # ============================================================
 def robust_fit(n_arr, t_arr, model_func, p0):
     n_arr = np.asarray(n_arr, dtype=float)
     t_arr = np.asarray(t_arr, dtype=float)
-    bounds = (np.array([0.0, 0.0]), np.array([np.inf, np.inf]))
+    n_params = len(p0)
+    # Bounds are now built from len(p0), so this works for both the
+    # 2-parameter and 3-parameter (nufft) models.
+    bounds = (np.zeros(n_params), np.full(n_params, np.inf))
 
     def residuals(params):
-        a, ovh = params
-        return model_func(n_arr, a, ovh) - t_arr
+        return model_func(n_arr, *params) - t_arr
 
     res0 = least_squares(residuals, p0, bounds=bounds)
     mad = np.median(np.abs(res0.fun - np.median(res0.fun))) or 1e-6
@@ -129,7 +199,7 @@ def bootstrap_fit(repeats_by_n, model_func, p0, n_boot=500, seed=0):
             continue
     boot_params = np.array(boot_params)
     if len(boot_params) == 0:
-        return np.array([np.nan, np.nan])
+        return np.full(len(p0), np.nan)
     return boot_params.std(axis=0)
 
 
@@ -145,25 +215,19 @@ def analyze_group(df, kernel, algo, n_boot, seed):
     n_values = np.array(sorted(repeats_by_n.keys()), dtype=float)
     t_min = np.array([np.median(repeats_by_n[n]) for n in n_values])
 
-    model_func, model_label = get_model(kernel, algo)
-    p0 = [1e-7, 0.01] if algo == "pastas" else [1e-7, 0.001]
+    model_func, model_label, p0 = get_model(kernel, algo)
 
     params = robust_fit(n_values, t_min, model_func, p0)
-    a, ovh = params
     r2 = r_squared(n_values, t_min, model_func, params)
-    a_err, ovh_err = bootstrap_fit(
-        repeats_by_n, model_func, p0, n_boot=n_boot, seed=seed
-    )
+    param_err = bootstrap_fit(repeats_by_n, model_func, p0, n_boot=n_boot, seed=seed)
     spread = np.array([repeats_by_n[n].max() - repeats_by_n[n].min() for n in n_values])
 
     return dict(
         kernel=kernel,
         algo=algo,
         model=model_label,
-        a=a,
-        a_err=a_err,
-        ovh_ms=ovh * 1000,
-        ovh_err_ms=ovh_err * 1000,
+        params=params,
+        param_err=param_err,
         r2=r2,
         n_values=n_values,
         t_min=t_min,
@@ -205,13 +269,11 @@ def plot_results(results, output_prefix, show_fit_res=True):
             n_grid = np.logspace(
                 np.log10(r["n_values"].min()), np.log10(n_max_all), 200
             )
-            fit_curve = r["model_func"](n_grid, r["a"], r["ovh_ms"] / 1000)
+            fit_curve = r["model_func"](n_grid, *r["params"])
             if show_fit_res:
-                label_info = (
-                    f"fit {r['model']} (a={r['a']:.2e}$\pm${r['a_err']:.1e}, "
-                    f"ovh={r['ovh_ms']:.1f}$\pm${r['ovh_err_ms']:.1f} ms, "
-                    f"$R^2$={r['r2']:.3f})"
-                )
+                # Generic parameter formatting (works for 2 or 3 params).
+                param_str = format_params(algo, r["params"], r["param_err"])
+                label_info = f"fit {r['model']} ($R^2$={r['r2']:.3f})\n {param_str}"
             else:
                 label_info = f"fit {r['model']} ($R^2$={r['r2']:.3f})"
             ax.plot(
@@ -226,7 +288,7 @@ def plot_results(results, output_prefix, show_fit_res=True):
         ax.set_xlabel("Number of points in series")
         ax.set_ylabel("Computation time [s]")
         ax.set_title(f"{kernel}")
-        fontsz = 8 if show_fit_res else mpl.rcParams["legend.fontsize"]
+        fontsz = 7 if show_fit_res else mpl.rcParams["legend.fontsize"]
         ax.legend(fontsize=fontsz)
         ax.grid(True, which="both", alpha=0.3)
         fig.suptitle("ACF benchmark (regular data): Pastas vs nufftcf (fft / nufft)")
@@ -272,23 +334,24 @@ if __name__ == "__main__":
     print("\n=== Fit summary ===")
     summary_rows = []
     for r in results:
+        note = dominant_term_note(r["model_func"], r["params"], r["n_values"].max())
         print(
-            f"{r['kernel']:9s} {r['algo']:7s} {r['model']:18s} "
-            f"a={r['a']:.3e}\u00b1{r['a_err']:.1e}  "
-            f"ovh={r['ovh_ms']:.2f}\u00b1{r['ovh_err_ms']:.2f} ms  R2={r['r2']:.4f}"
+            f"{r['kernel']:9s} {r['algo']:7s} {r['model']:28s} "
+            f"{format_params(r['model_func'], r['params'], r['param_err'])}  "
+            f"R2={r['r2']:.4f}{note}"
         )
-        summary_rows.append(
-            {
-                "kernel": r["kernel"],
-                "algo": r["algo"],
-                "model": r["model"],
-                "a": r["a"],
-                "a_err": r["a_err"],
-                "overhead_ms": r["ovh_ms"],
-                "overhead_err_ms": r["ovh_err_ms"],
-                "R2": r["r2"],
-            }
-        )
+        row = {
+            "kernel": r["kernel"],
+            "algo": r["algo"],
+            "model": r["model"],
+            "R2": r["r2"],
+        }
+        for name, val, err in zip(
+            _param_names(r["model_func"]), r["params"], r["param_err"]
+        ):
+            row[name] = val
+            row[f"{name}_err"] = err
+        summary_rows.append(row)
 
     summary_df = pd.DataFrame(summary_rows)
     summary_csv = f"{args.output_prefix}_fit_summary.csv"
