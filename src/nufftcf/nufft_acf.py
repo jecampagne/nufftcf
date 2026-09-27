@@ -3,8 +3,10 @@ ACF estimation via NUFFT (non-uniform FFT) + Wiener-Khinchin theorem.
 
 These estimators compute the power spectrum of the (irregularly-sampled)
 signal via a type-1 NUFFT, then evaluate the implied autocorrelation at the
-requested lags via a type-2 NUFFT. This scales roughly as O(n log n),
-dramatically faster than the O(n^2) real-space approach for long series --
+requested lags via a type-2 NUFFT. This scales as O(nK) for K requested
+lags (linear in n at fixed K, dominated by the O(n)-per-lag pair-count
+normalization rather than by the NUFFT calls themselves), dramatically
+faster than the O(n^2) real-space approach for long series --
 but it carries a small, known limitation (see README): because it relies on
 a finite-domain Fourier representation, irregular/gappy sampling acts as a
 "spectral window" that slightly distorts narrowband (e.g. periodic) signals
