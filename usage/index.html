@@ -1,0 +1,1158 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Fast Auto & Cross correlatuon estimation for irregularly- and regularly-sampled 1D signals, via the Non-Uniform FFT (FINUFFT) and classic FFT.
+">
+      
+      
+        <meta name="author" content="Jean-Eric Campagne">
+      
+      
+        <link rel="canonical" href="https://jecampagne.github.io/nufftcf/usage/">
+      
+      
+        <link rel="prev" href="../installation/">
+      
+      
+        <link rel="next" href="../api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Usage - nufftcf</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#usage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="nufftcf" class="md-header__button md-logo" aria-label="nufftcf" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            nufftcf
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Usage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jecampagne/nufftcf" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jecampagne/nufftcf
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Usage
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../license/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  License
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="nufftcf" class="md-nav__button md-logo" aria-label="nufftcf" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    nufftcf
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jecampagne/nufftcf" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jecampagne/nufftcf
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#function-signatures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Function signatures
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-correlation-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-correlation example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#which-estimator-should-i-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which estimator should I use?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Which estimator should I use?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-note-on-the-nufft-residual-bias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A note on the NUFFT residual bias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regularly-sampled-data-the-_fft-estimators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regularly-sampled data: the _fft estimators
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notebooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benchmark
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Citing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#function-signatures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Function signatures
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-correlation-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-correlation example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#which-estimator-should-i-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which estimator should I use?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Which estimator should I use?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-note-on-the-nufft-residual-bias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A note on the NUFFT residual bias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regularly-sampled-data-the-_fft-estimators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regularly-sampled data: the _fft estimators
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notebooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benchmark
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Citing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
+<h2 id="function-signatures">Function signatures<a class="headerlink" href="#function-signatures" title="Permanent link">&para;</a></h2>
+<p>All ACF functions share the same signature:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>                     <span class="c1"># no-kernel ("regular") variant</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>      <span class="c1"># gaussian / rectangle variants</span>
+</code></pre></div>
+<ul>
+<li><code>lags</code> — array of lag values (same units as <code>t</code>)</li>
+<li><code>t</code> — sample times, sorted ascending (float array, e.g. days since start)</li>
+<li><code>x</code> — signal values, same length as <code>t</code></li>
+<li><code>bin_width</code> — kernel half-width (gaussian σ or rectangle half-width), same units as <code>t</code></li>
+<li>Returns <code>(c, b)</code> — ACF estimate and effective pair count, both shape <code>(len(lags),)</code></li>
+</ul>
+<p>The CCF functions take a second <code>(s, y)</code> series in addition to <code>(t, x)</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li><code>s</code> — sample times of the second series, sorted ascending, on the <strong>same time
+  origin as <code>t</code></strong> (see the note on the common time origin on the <a href="../">Home</a> page)</li>
+<li><code>y</code> — signal values of the second series, same length as <code>s</code></li>
+<li>Returns <code>(c, b)</code> — CCF estimate (Pearson-normalised, <code>c ~ 1</code> at perfect correlation)
+  and effective pair count, both shape <code>(len(lags),)</code>. By convention a positive lag
+  means <code>y</code> lags behind <code>x</code> (the CCF peaks at <code>lag = tau0</code> when <code>y(t) ~ x(t - tau0)</code>)</li>
+</ul>
+<h2 id="quick-start">Quick start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftcf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_acf_gaussian_nufft</span><span class="p">,</span> <span class="n">t_numeric_of</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># An irregularly-sampled series (any DatetimeIndex works)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">idx</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">"2000-01-01"</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"D"</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5000</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.2</span><span class="p">]</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)),</span> <span class="n">index</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">366.0</span><span class="p">)</span>         <span class="c1"># 0 to 365 days</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">t</span> <span class="o">=</span> <span class="n">t_numeric_of</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>                   <span class="c1"># elapsed days since first sample</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_acf_gaussian_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="c1"># c: ACF estimate per lag (c -&gt; 1 at lag -&gt; 0)</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="c1"># b: effective number of contributing pairs per lag (useful to flag</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="c1">#    under-sampled lags, e.g. mask out lags where b is too small)</span>
+</code></pre></div>
+<h3 id="cross-correlation-example">Cross-correlation example<a class="headerlink" href="#cross-correlation-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftcf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_ccf_gaussian_nufft</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># Two irregularly-sampled series on a COMMON time origin (elapsed days since</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># the same reference date), with y lagging behind x by tau0 = 60 days</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">ref_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">"2000-01-01"</span><span class="p">)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">n_days</span><span class="p">,</span> <span class="n">tau0</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mi">3650</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mf">10.0</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># shared latent Ornstein-Uhlenbeck-like signal (ACF ~ exp(-|u|/alpha))</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">)</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">noise</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n_days</span> <span class="o">+</span> <span class="n">tau0</span><span class="p">)</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_days</span> <span class="o">+</span> <span class="n">tau0</span><span class="p">)</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">noise</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_days</span> <span class="o">+</span> <span class="n">tau0</span><span class="p">):</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">noise</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="n">mask_x</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n_days</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.6</span>   <span class="c1"># series 1: ~40% of days kept</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="n">mask_y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n_days</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.4</span>   <span class="c1"># series 2: ~60% of days kept</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_days</span><span class="p">)[</span><span class="n">mask_x</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>   <span class="c1"># elapsed days, series 1</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_days</span><span class="p">)[</span><span class="n">mask_y</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>   <span class="c1"># elapsed days, series 2 (same origin as t)</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="n">x</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">tau0</span><span class="p">:][</span><span class="n">mask_x</span><span class="p">]</span>     <span class="c1"># x(t)   = z(t)</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="n">y</span> <span class="o">=</span> <span class="n">z</span><span class="p">[:</span><span class="n">n_days</span><span class="p">][</span><span class="n">mask_y</span><span class="p">]</span>   <span class="c1"># y(t)   = z(t - tau0)  -&gt; y lags x by tau0 days</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">181.0</span><span class="p">)</span>   <span class="c1"># 1 to 180 days</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_ccf_gaussian_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="c1"># c: CCF estimate per lag, peaks at lag = tau0 = 60</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="c1"># b: effective number of contributing pairs per lag</span>
+</code></pre></div>
+<h2 id="which-estimator-should-i-use">Which estimator should I use?<a class="headerlink" href="#which-estimator-should-i-use" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Your data is regularly sampled</strong> (a fixed time step, no gaps): use the
+  <code>_fft</code> variants. They're faster than both <code>_nufft</code> (no NUFFT overhead) and
+  <code>_realspace</code> (no numba two-pointer scan) on regular data, and
+  <code>compute_acf_regular_fft</code> additionally gives you Pastas' "regular"
+  bin_method (no smoothing kernel) at a fraction of its cost (see
+  <code>benchmark/</code>).</li>
+<li><strong>Long, irregularly-sampled series</strong> (tens of thousands of points or more)
+  where Pastas' real-space approach becomes impractically slow: use the
+  <code>_nufft</code> variants.</li>
+<li><strong>Strongly periodic, irregularly-sampled signals</strong> (e.g. seasonal/annual
+  cycles) where you need the most accurate possible ACF and series length is
+  manageable: use the <code>_realspace</code> variants, or the <code>_nufft</code> variants with an
+  increased <code>N1</code>, which reduces but does not fully
+  eliminate the residual bias (see below).</li>
+<li><strong>Everything else, irregular case</strong>: either <code>_nufft</code> or <code>_realspace</code>
+  works; which is faster depends on how many lags <code>K</code> you request --
+  <code>_nufft</code> pulls ahead once <span class="arithmatex">\(K\)</span> reaches the hundreds/thousands,
+  <code>_realspace</code> is competitive or faster for a handful of lags (see
+  below).</li>
+</ul>
+<h3 id="a-note-on-the-nufft-residual-bias">A note on the NUFFT residual bias<a class="headerlink" href="#a-note-on-the-nufft-residual-bias" title="Permanent link">&para;</a></h3>
+<p>The NUFFT-based estimators compute the power spectrum of the irregularly-sampled signal and invert it at the requested lags via the Wiener-Khinchin theorem. This implicitly relies on a finite-domain Fourier representation, which is mathematically equivalent to convolving the true spectrum with the "spectral window" induced by the irregular/gappy sampling pattern. A narrow spectral peak (a strongly periodic signal) is distorted much more visibly by this convolution than a broad, featureless spectrum (e.g. an AR(1)-type exponential decay), even though the absolute size of the distortion is similar in both cases.</p>
+<p>In practice, with the default <code>N1</code> -- <code>32 * len(x)</code> (the number of Fourier modes used internally by FINUFFT), further multiplied by <code>eff_span / span</code> when the requested lags approach the data's time span (see <a href="https://github.com/jecampagne/nufftcf/blob/main/CHANGELOG.md#020---2026-09-19">CHANGELOG</a> for why) -- this residual bias is on the order of 1–3% of the ACF amplitude for strongly periodic signals with irregular or gappy sampling, and negligible for smoothly-decaying, broadband signals. Reducing N1 speeds up the computation slightly at the cost of a larger bias; increasing it beyond the default gives diminishing returns for most practical series.</p>
+<blockquote>
+<p>As of v0.2.0, the <code>_nufft</code> estimators handle lags approaching the data's
+time span correctly (a periodic wrap-around bug affecting that regime in
+earlier versions was fixed -- see <a href="https://github.com/jecampagne/nufftcf/blob/main/CHANGELOG.md#020---2026-09-19">CHANGELOG</a>). If
+you're on an earlier version and use lags that are more than a few
+percent of your data's span, upgrade.</p>
+</blockquote>
+<p>The <code>_realspace</code> estimators do not have this limitation (no implicit
+periodicity assumption). </p>
+<h3 id="regularly-sampled-data-the-_fft-estimators">Regularly-sampled data: the <code>_fft</code> estimators<a class="headerlink" href="#regularly-sampled-data-the-_fft-estimators" title="Permanent link">&para;</a></h3>
+<p>When <code>t</code> is on a regular grid, <code>compute_acf_regular_fft</code> /
+<code>compute_acf_rectangle_fft</code> / <code>compute_acf_gaussian_fft</code> (in <code>fft_acf.py</code>)
+skip NUFFT entirely and use a plain <code>scipy.signal.correlate</code> (classic FFT
+correlation) instead -- faster, and with no finufft/numba dependency in the
+hot path. All three raise <code>ValueError</code> if <code>t</code> isn't regularly spaced (use
+<code>_nufft</code>/<code>_realspace</code> for that).</p>
+<ul>
+<li><code>compute_acf_regular_fft</code> reproduces Pastas' <code>bin_method="regular"</code>
+  (a windowed Pearson correlation, no smoothing kernel) to numerical
+  precision (<code>atol=1e-9</code> in <code>tests/test_fft_acf.py</code>), via an O(n) cumulative
+  -moments computation (<code>E[X^2] - E[X]^2</code>) instead of one <code>np.corrcoef</code> call
+  per lag.</li>
+<li><code>compute_acf_rectangle_fft</code> / <code>compute_acf_gaussian_fft</code> match
+  <code>compute_acf_rectangle_realspace</code> / <code>compute_acf_gaussian_realspace</code>
+  almost exactly at the package's default <code>bin_width=0.5</code> (<code>atol=1e-9</code>).
+  For other <code>bin_width</code> values, expect a small residual at <code>lag=0</code>
+  specifically (a few %, decaying to &lt;0.1% by lag~5) -- an inherent
+  discretization artifact of approximating a continuous symmetric kernel
+  window with a discrete digital filter, not a bug to chase further; see
+  <code>tests/test_fft_acf.py::test_rectangle_fft_matches_realspace_various_bin_widths</code>
+  for the exact numbers across <code>bin_width</code> values.</li>
+</ul>
+<h2 id="notebooks">Notebooks<a class="headerlink" href="#notebooks" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://github.com/jecampagne/nufftcf/blob/main/notebook/scipy_vs_nufftcf_ccf.ipynb"><code>scipy_vs_nufftcf_ccf.ipynb</code></a> is aimed at
+users familiar with <code>scipy.signal.correlate</code>: it cross-correlates a sine wave
+with a noisy, time-shifted copy of itself, comparing <code>scipy</code> against <code>nufftcf</code>
+FFT and NUFFT estimators. Along the way it explains why the peak value can
+slightly exceed 1, and how to inspect the NUFFT precision parameter <code>N1</code> (whose default value
+already gives reasonable estimates) and tune it further if needed.</li>
+<li><a href="https://github.com/jecampagne/nufftcf/blob/main/notebook/pastas_vs_nufftcf.ipynb"><code>pastas_vs_nufftcf.ipynb</code></a>
+  compares <strong>nufftcf</strong> against <strong>Pastas</strong> on <strong>irregularly</strong>-sampled series
+  (sine and AR(1)-like, with random gaps), using the <code>_nufft</code> estimators.</li>
+<li><a href="https://github.com/jecampagne/nufftcf/blob/main/notebook/pastas_vs_nufftcf_regular.ipynb"><code>pastas_vs_nufftcf_regular.ipynb</code></a>
+  does the same on <strong>regularly</strong>-sampled series (sine, noisy sine,
+  noisy exponential decay, square wave), using the <code>_fft</code> estimators,
+  for all 3 of Pastas' bin methods (<code>regular</code>/<code>rectangle</code>/<code>gaussian</code>).</li>
+<li><a href="https://github.com/jecampagne/nufftcf/blob/main/notebook/zdcf_vs_nufftcf.ipynb"><code>zdcf_vs_nufftcf.ipynb</code></a> compares <strong>nufftcf</strong> against <strong>pyzdcf</strong> on the same <strong>irregularly</strong>-sampled series used in the <code>pastas_vs_nufftcf.ipynb</code>.</li>
+<li><a href="https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_ccf_demo.ipynb"><code>nufftcf_ccf_demo.ipynb</code></a> demonstrates the
+  <strong>cross-correlation (CCF)</strong> functions (<code>compute_ccf_gaussian_nufft</code>,
+  <code>compute_ccf_rectangle_nufft</code>) against <strong>pyZDCF</strong>, including a case with two
+  series built from coupled Ornstein-Uhlenbeck processes for which the
+  theoretical CCF is known analytically.</li>
+<li><a href="https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_astro_demo.ipynb"><code>nufftcf_astro_demo.ipynb</code></a> is an
+  <strong>astrophysics-flavoured</strong> use-case of the ACF estimators on
+  a synthetic stellar light curve combining a quasi-periodic rotation signal
+  (sinusoid of period <code>P_rot</code> with a slowly-evolving amplitude, modeling spot
+  evolution), a fast Ornstein-Uhlenbeck <strong>correlated-noise</strong> component
+  (flicker/granulation-like), a <strong>ground-based survey sampling</strong>
+  (seasonal observability window + random weather losses, i.e. structured
+  gaps rather than uniform sub-sampling) and <strong>heteroscedastic</strong> per-point
+  measurement noise -- for which the ACF of the latent process is known
+  analytically in closed form. <code>compute_acf_gaussian_realspace</code> and
+  <code>compute_acf_gaussian_nufft</code> are run on the sparse, noisy light curve and
+  checked against this ground truth; the rotation period <code>P_rot</code> and the
+  noise correlation time <code>tau_n</code> are then recovered from the estimated ACF
+  by peak search and a composite-model fit (with the associated identifiability
+  and measurement-noise-dilution subtleties discussed in the notebook), and
+  the recovery is validated over many independent survey realizations
+  (Monte Carlo over seeds).</li>
+<li><a href="https://github.com/jecampagne/nufftcf/blob/main/notebook/nufftcf_demo_ccf_Emmanoulopoulos.ipynb"><code>nufftcf_demo_ccf_Emmanoulopoulos.ipynb</code></a>
+  is a <strong>cross-correlation, reverberation-mapping-flavoured</strong> use-case of the
+  CCF estimators on a synthetic pair of AGN/blazar-like light curves. A single
+  latent series is drawn with the Emmanoulopoulos algorithm
+  (<a href="https://github.com/cgalelli/gammapy_SyLC"><code>gammapy_SyLC</code></a>, power-law PSD +
+  log-normal PDF), from which an <em>optical</em> and a <em>gamma-ray</em> band are derived
+  with independent seasonal-survey sampling, a known injected delay
+  (<code>lag_days=15</code> d) and independent, heteroscedastic per-band measurement
+  noise. <code>compute_ccf_gaussian_nufft</code>, <code>compute_ccf_rectangle_nufft</code> and
+  <code>compute_ccf_gaussian_realspace</code> are checked for mutual consistency on this
+  sparse, dual-cadence pair; the injected delay is recovered by peak search
+  with a confidence interval obtained by bootstapping, and its significance is assessed via Monte
+  Carlo over many independent, uncorrelated gamma-ray realizations. The
+  notebook closes on why the recovered peak falls below 1 -- mainly
+  measurement-noise dilution, with sampling and edge effects as secondary
+  contributors.</li>
+</ul>
+<p>All are Colab-ready: the first cell installs <strong>nufftcf</strong> as well as <strong>Pastas</strong> or <strong>pyzdcf</strong> and third party libraries. Concerning <strong>pyzdcf</strong>, the repository was cloned and adapted to ensure compatibility with the pandas and other library versions used in this notebook, allowing it to run on Google Colab. These changes do not affect the quality of the computations.</p>
+<h2 id="method">Method<a class="headerlink" href="#method" title="Permanent link">&para;</a></h2>
+<p><code>nufftcf</code> is built on two ingredients:</p>
+<ol>
+<li><strong><a href="https://github.com/flatironinstitute/finufft">FINUFFT</a></strong> (Flatiron
+   Institute) to evaluate the power spectrum of the irregularly-sampled
+   signal via a type-1 non-uniform FFT, then invert it at the requested lags
+   via a type-2 NUFFT (Wiener-Khinchin theorem).</li>
+<li>An analytical, kernel-specific correction for the number of
+   contributing sample pairs per lag (the <code>b</code> denominator in <code>kernels.py</code>),
+   for both the <strong>Gaussian</strong> and <strong>rectangular/boxcar</strong> smoothing kernels --
+   computed with an <span class="arithmatex">\(O(n)\)</span> two-pointer scan <em>per lag</em> (since <code>t</code> is sorted),
+   rather than the naive <span class="arithmatex">\(O(n^2)\)</span> all-pairs count per lag. This <code>b</code> is what
+   turns the raw NUFFT power spectrum into a properly normalized
+   correlation.</li>
+</ol>
+<p>See <code>benchmark/</code> for how each of these two ingredients contributes to the
+measured scaling of the <code>_nufft</code> estimators.</p>
+<p>On a <strong>regular</strong> grid, <code>fft_acf.py</code> gets the same <code>b</code> correction for free,
+without the two-pointer scan: smoothing the deterministic "raw pair count"
+ramp (<code>n - lag</code>) with the <em>same</em> discrete filter (gaussian or box) used for
+the correlation numerator reproduces <code>b</code> exactly -- see the "Regularly
+-sampled data" section above for the validation numbers and the two bugs
+this caught in the original prototype.</p>
+<p>See <code>nufft_acf.py</code>, <code>kernels.py</code> and <code>fft_acf.py</code> docstrings for the full
+derivation, and <code>notebook/</code> / <code>benchmark/</code> for empirical validation.</p>
+<h2 id="benchmark">Benchmark<a class="headerlink" href="#benchmark" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>benchmark/benchmark_acf.py</code> (+ <code>fit_benchmark_acf.py</code>): <strong>Pastas</strong> vs
+  <code>_nufft</code>, on <strong>irregularly</strong>-sampled series of varying length, both
+  kernels.</li>
+<li><code>benchmark/benchmark_acf_regular.py</code> (+ <code>fit_benchmark_acf_regular.py</code>):
+  Pastas vs <code>_fft</code> <em>and</em> <code>_nufft</code>, on <strong>regularly</strong>-sampled series of
+  varying length, all 3 bin methods -- this is what lets you see, on
+  regular data, how much the dedicated <code>_fft</code> path buys over just reusing
+  the more general <code>_nufft</code> estimator.</li>
+<li>no real benchmarks are provided to compare <strong>nufftcf</strong> against <strong>pyzdcf</strong>, although in the plots obtained in <code>zdcf_vs_nufftcf.ipynb</code> one can appreciate that <strong>nufftcf</strong> is ~2 order of magnitude faster. </li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[benchmark]"</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>python<span class="w"> </span>benchmark/benchmark_acf.py<span class="w">            </span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># -&gt; benchmark_acf_results.csv</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf.py
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>python<span class="w"> </span>benchmark/benchmark_acf_regular.py<span class="w">    </span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># -&gt; benchmark_acf_regular_results.csv</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf_regular.py
+</code></pre></div>
+<p>Adjust <code>durations_years</code> / <code>n_points_list</code> and the <strong>Pastas</strong> cutoffs
+(<code>pastas_max_years</code>, <code>pastas_max_n_regular</code>, <code>pastas_max_n_kernel</code> -- <strong>Pastas</strong>'
+"gaussian"/"rectangle" bin methods are <span class="arithmatex">\(O(n^2)\)</span> on regular data too, just like
+on irregular data, while "regular" is empirically <span class="arithmatex">\(\sim O(n)\)</span> and stays usable
+much longer; both were measured directly before picking these defaults, not
+assumed) at the top of each script as needed. Each measurement uses several
+repeats and keeps the minimum, to reduce noise from shared/cloud
+environments (Colab, background browser activity, etc.).</p>
+<p><code>benchmark/*_macosx.{csv,png}</code> give the results on MacBook Pro (2020) 2 GHz Intel Core i5 quatre cœurs (osx Tahoe 26.5.1)-- re-run on your own machine for comaparison. You can share your results on the <a href="https://github.com/jecampagne/nufftcf/discussions">Discussions</a> of the repository.</p>
+<h2 id="citing">Citing<a class="headerlink" href="#citing" title="Permanent link">&para;</a></h2>
+<p>If you use <code>nufftcf</code>, please also cite FINUFFT, which it depends on:</p>
+<blockquote>
+<p>A. H. Barnett, J. F. Magland, and L. af Klinteberg (2019).
+<em>A parallel non-uniform fast Fourier transform library based on an
+"exponential of semicircle" kernel.</em> SIAM J. Sci. Comput.  41(5), C479-C504.
+https://github.com/flatironinstitute/finufft</p>
+<p><em>Jean-Eric Campagne (2026)</em>
+<a href="https://arxiv.org/abs/2609.03866">arXiv:2609.03866</a>   <a href="https://arxiv.org/pdf/2609.03866">PDF</a>
+<em>Class: astro-ph.IM</em>: <strong>nufftcf: Fast Auto- and Cross-Correlation Function Estimation for Irregularly-Sampled Time Series via the Non-Uniform FFT</strong></p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+    
+  </body>
+</html>
