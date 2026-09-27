@@ -36,12 +36,19 @@ import pastas as ps
 from nufftcf import (
     compute_acf_gaussian_nufft,
     compute_acf_rectangle_nufft,
+    compute_acf_gaussian_realspace,
+    compute_acf_rectangle_realspace,
     t_numeric_of,
 )
 
 NUFFT_FUNCS = {
     "gaussian": compute_acf_gaussian_nufft,
     "rectangle": compute_acf_rectangle_nufft,
+}
+
+REALSPACE_FUNCS = {
+    "gaussian": compute_acf_gaussian_realspace,
+    "rectangle": compute_acf_rectangle_realspace,
 }
 
 
@@ -75,6 +82,15 @@ def time_nufft_once(series, lags, method="gaussian", bin_width=0.5):
     return time.perf_counter() - t0
 
 
+def time_realspace_once(series, lags, method="gaussian", bin_width=0.5):
+    t = t_numeric_of(series)
+    x = series.to_numpy()
+    func = REALSPACE_FUNCS[method]
+    t0 = time.perf_counter()
+    func(lags, t, x, bin_width=bin_width)
+    return time.perf_counter() - t0
+
+
 def time_pastas_once(series, lags, method="gaussian", bin_width=0.5, max_gap=30):
     t0 = time.perf_counter()
     ps.stats.acf(
@@ -99,15 +115,17 @@ def run_benchmark(
     seed=42,
     n_repeat_pastas=6,
     n_repeat_nufft=3,
+    n_repeat_realspace=3,
     order_seed=None,
 ):
-    lags = np.arange(0.0, 366.0)
+    lags = np.arange(0.0, 366)
     rows = []
 
     # JIT warm-up (excluded from recorded timings) for each method
     warmup_series = generate_irregular_series(1, drop_fraction, seed)
     for method in methods:
         time_nufft_once(warmup_series, lags, method=method)
+        time_realspace_once(warmup_series, lags, method=method)
         time_pastas_once(warmup_series, lags, method=method)
 
     # Build the full list of (method, n_years) combinations, then shuffle
@@ -137,6 +155,21 @@ def run_benchmark(
                 )
             )
 
+        for rep in range(n_repeat_realspace):
+            run_order += 1
+            dt = time_realspace_once(series, lags, method=method)
+            rows.append(
+                dict(
+                    run_order=run_order,
+                    method=method,
+                    n_years=ny,
+                    n_points=n,
+                    algo="realspace",
+                    repeat=rep,
+                    time_s=dt,
+                )
+            )
+
         if ny <= pastas_max_years:
             for rep in range(n_repeat_pastas):
                 run_order += 1
@@ -158,6 +191,13 @@ def run_benchmark(
             for r in rows
             if r["method"] == method and r["n_years"] == ny and r["algo"] == "nufft"
         )
+
+        n_min_realspace = min(
+            r["time_s"]
+            for r in rows
+            if r["method"] == method and r["n_years"] == ny and r["algo"] == "realspace"
+        )
+
         pastas_note = ""
         if ny <= pastas_max_years:
             n_min_pastas = min(
@@ -170,9 +210,10 @@ def run_benchmark(
             pastas_note = f"t_pastas(min)={n_min_pastas:8.4f}s"
         else:
             pastas_note = "t_pastas=skip"
+
         print(
             f"method={method:9s}  n_years={ny:6.0f}  n_points={n:7d}  "
-            f"{pastas_note}  t_nufft(min)={n_min_nufft:8.4f}s"
+            f"{pastas_note}  t_nufft(min)={n_min_nufft:8.4f}s t_realspace(min)={n_min_realspace:8.4f}s"
         )
 
     return pd.DataFrame(rows)
@@ -180,7 +221,7 @@ def run_benchmark(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Collect ACF benchmark timing data (Pastas vs nufftcf)."
+        description="Collect ACF benchmark timing data (Pastas vs nufftcf NUFFT/realspace)."
     )
     parser.add_argument(
         "--output",
@@ -203,8 +244,16 @@ if __name__ == "__main__":
         "--n-repeat-nufft",
         type=int,
         default=3,
-        help="Number of repeats per point for the nufftcf package.",
+        help="Number of repeats per point for the nufftcf package (NUFFT).",
     )
+
+    parser.add_argument(
+        "--n-repeat-realspace",
+        type=int,
+        default=3,
+        help="Number of repeats per point for the nufftcf package (realspace).",
+    )
+
     parser.add_argument(
         "--order-seed",
         type=int,
@@ -220,6 +269,7 @@ if __name__ == "__main__":
         pastas_max_years=args.pastas_max_years,
         n_repeat_pastas=args.n_repeat_pastas,
         n_repeat_nufft=args.n_repeat_nufft,
+        n_repeat_realspace=args.n_repeat_realspace,
         order_seed=args.order_seed,
     )
     df.to_csv(args.output, index=False)

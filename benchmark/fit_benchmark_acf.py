@@ -5,6 +5,10 @@ Reads the long-format CSV produced by benchmark_acf.py (one row per
 individual repeat) and, for each kernel (gaussian/rectangle):
   - Pastas timings are fit to           a * n^2                  + overhead
   - nufftcf timings are fit to  a_lin * n  +  a_nlogn * n*ln(n)  + overhead
+  - realspace timings are fit to        a * n                    + overhead
+    (the brute-force, non-NUFFT direct computation: at the fixed number of
+    lags K used throughout this benchmark, a linear pass over the n points
+    per lag gives O(nK) = O(n) overall)
 
 CHANGED: the nufftcf model now
 has two additive terms because `compute_*_nufft` does two things of
@@ -85,6 +89,17 @@ def model_nufft(n, a_lin, a_nlogn, ovh):
     return a_lin * n + a_nlogn * n * np.log(n) + ovh
 
 
+def model_realspace(n, a_1, ovh):
+    """Direct real-space (brute-force, non-NUFFT) computation: for each of
+    the K fixed lags, a linear pass over the n points, i.e. O(nK) = O(n)
+    overall since K is fixed in this benchmark. Named a_1 (not a_2, which
+    is reserved for the n*ln(n) term in the nufft model, and not a, which
+    is pastas' n^2 coefficient) since it plays the same linear-in-n role
+    as nufft's a_1 term.
+    """
+    return a_1 * n + ovh
+
+
 # Each entry: (model_func, model_label, initial_guess_p0)
 MODELS = {
     "pastas": (model_pastas, r"$a.n^2 + ovh$", [1e-7, 0.01]),
@@ -93,6 +108,7 @@ MODELS = {
         r"$a_1.n + a_2.n.\ln(n) + ovh$",
         [1e-6, 1e-9, 0.005],
     ),
+    "realspace": (model_realspace, r"$a_1.n + ovh$", [1e-5, 0.005]),
 }
 
 
@@ -199,6 +215,7 @@ def analyze_group(df, kernel, algo, n_boot, seed):
 PARAM_NAMES = {
     "pastas": ["a", "ovh"],
     "nufft": ["a_1", "a_2", "ovh"],
+    "realspace": ["a_1", "ovh"],
 }
 
 
@@ -242,13 +259,13 @@ def plot_results(results, outfile, show_fit_res=True):
     if len(kernels) == 1:
         axes = [axes]
 
-    colors = {"pastas": "tab:blue", "nufft": "tab:red"}
-    markers = {"pastas": "o", "nufft": "s"}
-    linestyles = {"pastas": "--", "nufft": ":"}
+    colors = {"pastas": "tab:blue", "nufft": "tab:red", "realspace": "tab:green"}
+    markers = {"pastas": "o", "nufft": "s", "realspace": "^"}
+    linestyles = {"pastas": "--", "nufft": ":", "realspace": "-."}
 
     for ax, kernel in zip(axes, kernels):
         n_min_all, n_max_all = np.inf, 0
-        for algo in ("pastas", "nufft"):
+        for algo in ("pastas", "nufft", "realspace"):
             r = next(
                 (x for x in results if x["kernel"] == kernel and x["algo"] == algo),
                 None,
@@ -295,13 +312,7 @@ def plot_results(results, outfile, show_fit_res=True):
         ax.grid(True, which="both", alpha=0.3)
 
     axes[0].set_ylabel("Computation time [s]")
-    if show_fit_res:
-        fig.suptitle(
-            "ACF benchmark (irregular data): Pastas vs nufftcf -- robust fit (soft_l1)\n"
-            "error bars show the min-to-max spread across repeats at each point"
-        )
-    else:
-        fig.suptitle("ACF benchmark (irregular data): Pastas vs nufftcf")
+    fig.suptitle("ACF benchmark (irregular data): Pastas vs nufftcf")
     plt.tight_layout()
     plt.savefig(outfile, format="pdf", bbox_inches="tight", dpi=200)
     print(f"Figure saved: {outfile}")
@@ -350,7 +361,7 @@ if __name__ == "__main__":
 
     results = []
     for kernel in sorted(df["method"].unique()):
-        for algo in ("pastas", "nufft"):
+        for algo in ("pastas", "nufft", "realspace"):
             r = analyze_group(df, kernel, algo, n_boot=args.n_boot, seed=args.seed)
             if r is not None:
                 results.append(r)
