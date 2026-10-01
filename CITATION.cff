@@ -52,7 +52,7 @@ keywords:
   - auto-correlation
   - cross-correlation
 abstract: >-
-  Fast auto-correlation (ACF) and cross-correlation (CCF) function
-  estimation for irregularly- and regularly-sampled 1D signals,
-  scaling as O(n log n) via the Non-Uniform FFT (FINUFFT) and
-  classic FFT.
+  Fast autocorrelation (ACF) and cross-correlation (CCF) function estimation for irregularly- and 
+  regularly-sampled time series, thanks notably to the 
+  Nonuniform Fast Fourier Transform library developped by the Flatiron Institut. Provides also real-space estimators
+  and FFT-based for regularly-sampled series.
